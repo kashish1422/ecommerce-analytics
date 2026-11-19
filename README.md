@@ -4,7 +4,7 @@ An end-to-end analysis of **96,203 orders** from Olist, a Brazilian e-commerce m
 
 Built with **MySQL** (multi-table joins, CTEs, window functions), **Python** (pandas, statistical testing, cohort and RFM analysis) and an **interactive web dashboard**.
 
-**Live dashboard:** https://kashish1422.github.io/olist-ecommerce-analytics/Dashboard/ *(after GitHub Pages is enabled; see below)*
+**Live dashboard:** https://kashish1422.github.io/ecommerce-analytics/Dashboard/ *(after GitHub Pages is enabled; see below)*
 
 ---
 
@@ -50,7 +50,7 @@ Chart types were chosen per question: an area trend, a ranked list, a mean-vs-me
 ## Project structure
 
 ```text
-olist-ecommerce-analytics/
+ecommerce-analytics/
 ├── Data/
 │   ├── Raw/                      # 8 original Olist CSVs (geolocation excluded)
 │   └── Processed/                # created by the notebook
@@ -96,8 +96,8 @@ olist-ecommerce-analytics/
 ## How to run
 
 ```bash
-git clone https://github.com/kashish1422/olist-ecommerce-analytics.git
-cd olist-ecommerce-analytics
+git clone https://github.com/kashish1422/ecommerce-analytics.git
+cd ecommerce-analytics
 pip install -r requirements.txt
 ```
 
