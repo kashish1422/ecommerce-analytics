@@ -9,6 +9,7 @@ Usage (from the repository root, after running the notebook):
 """
 
 from pathlib import Path
+import base64
 import json
 
 import pandas as pd
@@ -35,7 +36,7 @@ def codes(series: pd.Series, labels: list) -> list:
 
 def main() -> None:
     orders = pd.read_csv(PROCESSED / "orders_clean.csv", parse_dates=["order_purchase_timestamp"])
-    rfm = pd.read_csv(PROCESSED / "customers_rfm.csv", usecols=["customer_unique_id", "segment"])
+    rfm = pd.read_csv(PROCESSED / "customers_rfm.csv", usecols=["customer_unique_id", "segment", "r_score", "m_score"])
 
     orders = orders.sort_values("order_purchase_timestamp").reset_index(drop=True)
     orders = orders.merge(rfm, on="customer_unique_id", how="left")
@@ -75,6 +76,8 @@ def main() -> None:
             "cat": codes(orders["main_category"], cat_rank),
             "pt": codes(orders["payment_type"].fillna("unknown"), pay_types),
             "seg": codes(orders["segment"], SEGMENTS),
+            "r": orders["r_score"].astype(int).tolist(),
+            "m": orders["m_score"].astype(int).tolist(),
             "cu": orders["customer_unique_id"].map(customer_ids).tolist(),
             "val": (orders["order_value"] * 100).round().astype(int).tolist(),          # cents
             "dd": (orders["delivery_days"] * 10).round().astype(int).tolist(),          # tenths of a day
@@ -88,6 +91,12 @@ def main() -> None:
     }
 
     template = (HERE / "dashboard_template.html").read_text(encoding="utf-8")
+
+    # Embed the subset web fonts (SIL Open Font License, see fonts/) so the page works offline.
+    fonts = {"bitter": "bitter.woff", "fira400": "fira-Regular.woff", "fira500": "fira-Medium.woff", "fira600": "fira-SemiBold.woff"}
+    for key, file in fonts.items():
+        b64 = base64.b64encode((HERE / "fonts" / file).read_bytes()).decode()
+        template = template.replace(f"__FONT_{key}__", f"data:font/woff;base64,{b64}")
     marker = "/*__DATA__*/null"
     if marker not in template:
         raise ValueError("Data marker not found in template.")

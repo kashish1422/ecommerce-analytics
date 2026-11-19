@@ -3,271 +3,338 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Olist E-commerce: Delivery &amp; Retention Dashboard</title>
-<meta name="description" content="Interactive dashboard of 96,203 Olist orders: revenue, delivery performance, review scores, cohort retention, RFM segments and payments.">
+<title>Olist: from order to review</title>
+<meta name="description" content="Interactive analysis of 96,203 Olist orders: how delivery performance shapes review scores and whether customers come back.">
 <style>
+  @font-face { font-family: "Bitter"; src: url(__FONT_bitter__) format("woff"); font-weight: 100 900; font-display: swap; }
+  @font-face { font-family: "Fira Sans"; src: url(__FONT_fira400__) format("woff"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Fira Sans"; src: url(__FONT_fira500__) format("woff"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Fira Sans"; src: url(__FONT_fira600__) format("woff"); font-weight: 600; font-display: swap; }
+
   :root {
     color-scheme: light;
-    --page: #f9f9f7;
-    --surface: #fcfcfb;
-    --text-primary: #0b0b0b;
-    --text-secondary: #52514e;
-    --muted: #898781;
-    --grid: #e1e0d9;
-    --axis: #c3c2b7;
-    --border: rgba(11,11,11,0.10);
-    --hover: rgba(11,11,11,0.04);
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100;
-    --good: #006300; --bad: #d03b3b;
-    --accent: linear-gradient(90deg, #0d366b, #2a78d6, #1baf7a);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
-      --page: #0d0d0d;
-      --surface: #1a1a19;
-      --text-primary: #f0efec;
-      --text-secondary: #c3c2b7;
-      --muted: #898781;
-      --grid: #2c2c2a;
-      --axis: #383835;
-      --border: rgba(255,255,255,0.10);
-      --hover: rgba(255,255,255,0.05);
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500;
-      --good: #0ca30c; --bad: #e66767;
-    }
+    --paper: #eef1f4;
+    --sheet: #ffffff;
+    --ink: #142038;
+    --ink-2: #4a556b;
+    --muted: #7c8698;
+    --rule: #d6dce4;
+    --route: #127a5b;
+    --route-soft: #d7ede5;
+    --late: #cf3e2b;
+    --late-soft: #f6dcd7;
+    --kraft: #b98b4e;
+    --kraft-soft: #f1e6d6;
+    --serif: "Bitter", Georgia, serif;
+    --sans: "Fira Sans", system-ui, sans-serif;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--page); color: var(--text-primary);
-    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-  }
-  .accent { height: 4px; background: var(--accent); }
-  .wrap { max-width: 1280px; margin: 0 auto; padding: 20px 24px 48px; }
-  header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-  h1 { font-size: 22px; margin: 0; letter-spacing: -0.01em; }
-  .sub { color: var(--text-secondary); margin-top: 2px; }
-  .sub a { color: inherit; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.5 var(--sans); font-variant-numeric: lining-nums; }
+  button, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--kraft); outline-offset: 2px; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
 
-  nav.tabs { display: flex; gap: 4px; margin: 18px 0 12px; border-bottom: 1px solid var(--grid); overflow-x: auto; }
-  nav.tabs button {
-    background: none; border: 0; padding: 10px 14px; font: inherit; font-weight: 600; cursor: pointer;
-    color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
-  }
-  nav.tabs button[aria-selected="true"] { color: var(--text-primary); border-bottom-color: var(--text-primary); }
-  nav.tabs button:hover { color: var(--text-primary); }
+  /* ---------- masthead ---------- */
+  .masthead { padding: 34px 0 6px; display: flex; justify-content: space-between; align-items: baseline; gap: 20px; flex-wrap: wrap; }
+  .masthead h1 { font: 600 22px/1.2 var(--serif); margin: 0; letter-spacing: -0.005em; }
+  .masthead p { margin: 0; color: var(--ink-2); font-size: 14px; }
 
-  .filters { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: flex-end; margin-bottom: 16px; }
-  .filters label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--text-secondary); }
-  .filters select {
-    font: inherit; font-size: 13px; color: var(--text-primary); background: var(--surface);
-    border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; min-width: 120px;
-  }
-  .filters button.reset {
-    font: inherit; font-size: 13px; border: 1px solid var(--border); background: var(--surface);
-    color: var(--text-primary); border-radius: 8px; padding: 6px 12px; cursor: pointer;
-  }
-  .filters .count { font-size: 12px; color: var(--muted); margin-left: auto; align-self: center; }
+  /* ---------- hero: the star drop ---------- */
+  .hero { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px; align-items: center; padding: 26px 0 34px; }
+  .hero h2 { font: 700 54px/1.02 var(--serif); letter-spacing: -0.02em; margin: 0 0 16px; max-width: 11ch; }
+  .hero .lede { font-size: 17px; line-height: 1.55; color: var(--ink-2); max-width: 46ch; margin: 0; }
+  .hero .lede b { color: var(--ink); font-weight: 600; }
+  .drop { background: var(--sheet); border-radius: 14px; padding: 22px 26px 18px; box-shadow: 0 1px 0 var(--rule); }
+  .drop svg { display: block; width: 100%; overflow: visible; }
+  .drop .caption { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 8px; font-size: 13.5px; color: var(--ink-2); }
+  .drop .caption span b { font-weight: 600; }
+  .drop .caption .on b { color: var(--route); } .drop .caption .lt b { color: var(--late); }
 
-  .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
-  .card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 16px; min-width: 0;
-  }
-  .span-12 { grid-column: span 12; } .span-8 { grid-column: span 8; } .span-7 { grid-column: span 7; }
-  .span-6 { grid-column: span 6; } .span-5 { grid-column: span 5; } .span-4 { grid-column: span 4; }
-  @media (max-width: 900px) { .grid > .card { grid-column: span 12; } }
-  .card h2 { font-size: 14px; margin: 0; }
-  .card .desc { font-size: 12px; color: var(--text-secondary); margin: 2px 0 10px; }
-  .card-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+  /* ---------- journey navigation ---------- */
+  .journey { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); margin: 4px 0 0; padding: 0; list-style: none; }
+  .journey::before { content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 11px; height: 2px; background: var(--rule); }
+  .journey .progress { position: absolute; left: 12.5%; top: 11px; height: 2px; background: var(--ink); transition: width .35s ease; }
+  .journey button { position: relative; background: none; border: 0; cursor: pointer; padding: 0 6px 18px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px; }
+  .journey .stop { width: 24px; height: 24px; border-radius: 50%; background: var(--paper); border: 2px solid var(--rule); margin-bottom: 8px; display: grid; place-items: center; transition: border-color .2s, background .2s; }
+  .journey .stop::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: transparent; }
+  .journey button.done .stop { border-color: var(--ink); }
+  .journey button.done .stop::after { background: var(--ink); }
+  .journey button[aria-selected="true"] .stop { background: var(--ink); border-color: var(--ink); }
+  .journey button[aria-selected="true"] .stop::after { background: var(--kraft); }
+  .journey .name { font: 600 16px/1.2 var(--serif); }
+  .journey .fig { font-size: 13px; color: var(--muted); }
+  .journey button:hover .name { color: var(--ink-2); }
+  .journey button[aria-selected="true"] .fig { color: var(--ink-2); }
 
-  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 14px; }
-  .kpi .label { font-size: 12px; color: var(--text-secondary); }
-  .kpi .value { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; margin-top: 2px; }
-  .kpi .note { font-size: 12px; color: var(--muted); }
+  /* ---------- filters ---------- */
+  .filterbar { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(6px); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .filterbar .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 22px; padding-top: 10px; padding-bottom: 10px; }
+  .filterbar label { display: inline-flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--muted); }
+  .filterbar select { border: 0; border-bottom: 1.5px solid var(--rule); background: transparent; padding: 2px 18px 2px 0; font-size: 14px; color: var(--ink); cursor: pointer; max-width: 210px;
+    appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+    background-position: right 5px top 55%, right 0 top 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+  .filterbar select:hover { border-bottom-color: var(--ink-2); }
+  .filterbar .count { margin-left: auto; font-size: 13px; color: var(--ink-2); }
+  .filterbar .clear { border: 0; background: none; font-size: 13px; color: var(--kraft); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+  .filterbar .clear[hidden] { display: none; }
 
-  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-  .seg button {
-    font: inherit; font-size: 12px; background: var(--surface); color: var(--text-secondary);
-    border: 0; padding: 5px 10px; cursor: pointer; border-right: 1px solid var(--border);
-  }
-  .seg button:last-child { border-right: 0; }
-  .seg button[aria-pressed="true"] { background: var(--text-primary); color: var(--surface); }
-
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-  .chart { width: 100%; position: relative; }
-  .chart svg { display: block; overflow: visible; }
-  svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
-  svg text.lbl { fill: var(--text-secondary); font-size: 12px; }
-  svg text.val { fill: var(--text-primary); font-size: 12px; font-variant-numeric: tabular-nums; }
-  svg .gridline { stroke: var(--grid); stroke-width: 1; }
-  svg .baseline { stroke: var(--axis); stroke-width: 1; }
-  svg [data-tip] { cursor: default; }
-  svg .band:hover { fill: var(--hover); }
-  svg .hov .guide, svg .hov .dot-h { opacity: 0; }
-  svg .hov:hover .guide, svg .hov:hover .dot-h { opacity: 1; }
-  svg .hov:hover .bandbg { fill: var(--hover); }
-  svg .cell:hover { stroke: var(--text-primary); stroke-width: 1.5; }
-
-  #tip {
-    position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--text-primary);
-    border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.12); opacity: 0; transition: opacity .08s; max-width: 260px;
-  }
-  #tip b { display: block; margin-bottom: 2px; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; }
-  th:first-child, td:first-child { text-align: left; }
-  th { font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; user-select: none; white-space: nowrap; }
-  th:hover { color: var(--text-primary); }
-  td.best { font-weight: 700; }
-  .table-scroll { overflow-x: auto; }
-
-  .takeaways { margin: 0; padding-left: 18px; }
-  .takeaways li { margin: 8px 0; }
-  .callout { font-size: 12px; color: var(--text-secondary); border-left: 3px solid var(--axis); padding: 4px 10px; margin-top: 10px; }
-  .stat-big { font-size: 34px; font-weight: 650; letter-spacing: -0.02em; }
+  /* ---------- page layout ---------- */
+  main.wrap { padding-top: 44px; padding-bottom: 20px; }
   .page { display: none; }
   .page.active { display: block; }
-  footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
-  .empty { color: var(--muted); font-size: 13px; padding: 30px 0; text-align: center; }
-</style>
+  .page-intro { max-width: 64ch; margin: 0 0 26px; }
+  .page-intro h2 { font: 700 30px/1.15 var(--serif); margin: 0 0 8px; letter-spacing: -0.01em; }
+  .page-intro p { margin: 0; color: var(--ink-2); font-size: 16px; }
+  .row { display: grid; gap: 30px; margin-bottom: 34px; align-items: start; }
+  .r-2-1 { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .r-3-2 { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  .r-1-1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .r-7-5 { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .sheet { background: var(--sheet); border-radius: 14px; padding: 22px 24px; }
+  .bare { padding: 4px 0 0; border-top: 2px solid var(--ink); }
+  h3 { font: 600 18px/1.3 var(--serif); margin: 0 0 4px; }
+  .bare h3 { margin-top: 12px; }
+  .note { font-size: 13.5px; color: var(--ink-2); margin: 0 0 14px; max-width: 62ch; }
+  .aside-note { font-size: 13.5px; color: var(--ink-2); border-left: 3px solid var(--kraft); padding: 2px 0 2px 12px; margin: 14px 0 0; max-width: 60ch; }
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; overflow: visible; max-width: 100%; height: auto; }
 
+  /* svg text */
+  svg text { font-family: var(--sans); font-size: 11.5px; fill: var(--muted); }
+  svg .t-ink { fill: var(--ink); } svg .t-ink2 { fill: var(--ink-2); }
+  svg .t-num { font-variant-numeric: tabular-nums; }
+  svg .t-serif { font-family: var(--serif); }
+  svg .grid { stroke: var(--rule); stroke-width: 1; }
+  svg .base { stroke: var(--ink-2); stroke-width: 1; }
+  svg [data-tip] { cursor: default; }
+  svg .hit:hover ~ .hl, svg g.hov:hover .hl { opacity: 1; }
+  svg .hl { opacity: 0; pointer-events: none; }
+  svg g.hov:hover .bgband { fill: rgba(20,32,56,0.04); }
+
+  /* figures list (purchase page) */
+  .figures { display: grid; gap: 0; }
+  .figure { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 4px 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+  .figure:first-child { padding-top: 0; }
+  .figure .k { font-size: 13px; color: var(--ink-2); grid-column: 1 / -1; }
+  .figure .v { font: 600 30px/1 var(--serif); letter-spacing: -0.01em; }
+  .figure .s { font-size: 12.5px; color: var(--muted); grid-column: 1 / -1; }
+
+  /* ranked list */
+  .rank { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .rank td { padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  .rank td.n { width: 30px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .rank td.name { width: 34%; padding-right: 12px; }
+  .rank td.barcell { width: 40%; padding-right: 12px; }
+  .rank td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rank td.share { text-align: right; color: var(--muted); width: 56px; font-variant-numeric: tabular-nums; }
+  .rank .bar { height: 8px; background: var(--ink); border-radius: 0 4px 4px 0; }
+  .rank tr:hover td { background: rgba(20,32,56,0.03); }
+
+  /* statements (return page) */
+  .statements { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; margin-bottom: 34px; }
+  .statement { border-top: 2px solid var(--ink); padding-top: 12px; }
+  .statement .v { font: 700 44px/1 var(--serif); letter-spacing: -0.02em; }
+  .statement p { margin: 8px 0 0; font-size: 14px; color: var(--ink-2); max-width: 34ch; }
+
+  /* segment list */
+  .segs { list-style: none; margin: 0; padding: 0; }
+  .segs li { display: grid; grid-template-columns: 12px 1fr auto; gap: 4px 12px; padding: 11px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .segs .sw { width: 12px; height: 12px; border-radius: 3px; align-self: center; }
+  .segs .nm { font-weight: 600; }
+  .segs .act { grid-column: 2 / -1; font-size: 13px; color: var(--ink-2); }
+  .segs .sh { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); margin-top: 10px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  #tip { position: fixed; pointer-events: none; z-index: 20; background: var(--ink); color: #fff; border-radius: 8px; padding: 8px 11px; font-size: 12.5px; line-height: 1.45;
+    opacity: 0; transition: opacity .1s; max-width: 260px; }
+  #tip b { display: block; font-family: var(--serif); font-weight: 600; font-size: 13.5px; margin-bottom: 2px; }
+  #tip .r { display: flex; justify-content: space-between; gap: 14px; } #tip .r span:last-child { font-variant-numeric: tabular-nums; font-weight: 500; }
+  .empty { color: var(--muted); font-size: 14px; padding: 36px 0; }
+
+  footer { border-top: 1px solid var(--rule); margin-top: 20px; padding: 18px 0 40px; font-size: 13px; color: var(--muted); }
+  footer p { margin: 0; max-width: 90ch; }
+
+  @media (max-width: 960px) {
+    .hero, .r-2-1, .r-3-2, .r-1-1, .r-7-5, .statements { grid-template-columns: minmax(0, 1fr); }
+    .hero h2 { font-size: 40px; }
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 0 16px; }
+    .journey .fig { display: none; }
+    .journey .name { font-size: 14px; }
+  }
+  @keyframes slide-in { from { transform: translateX(var(--dx)); } to { transform: translateX(0); } }
+  @keyframes fade-in { from { opacity: 0; } }
+  .drop-anim #mk-late { animation: slide-in 1.1s cubic-bezier(.6,.05,.25,1) .35s backwards; }
+  .drop-anim #dropseg { animation: fade-in .6s ease 1.2s backwards; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
 </head>
 <body>
-<div class="accent"></div>
 <div class="wrap">
-  <header>
-    <div>
-      <h1>Olist E-commerce: Delivery &amp; Retention Dashboard</h1>
-      <div class="sub" id="subtitle"></div>
-    </div>
-    <div class="sub">Python &middot; MySQL &middot; vanilla JS/SVG</div>
-  </header>
-
-  <nav class="tabs" role="tablist">
-    <button role="tab" data-page="overview" aria-selected="true">Overview</button>
-    <button role="tab" data-page="delivery" aria-selected="false">Delivery &amp; Satisfaction</button>
-    <button role="tab" data-page="retention" aria-selected="false">Customers &amp; Retention</button>
-    <button role="tab" data-page="categories" aria-selected="false">Categories &amp; Payments</button>
-  </nav>
-
-  <div class="filters" id="filters">
-    <label>Region<select data-f="rg"></select></label>
-    <label>State<select data-f="st"></select></label>
-    <label>Category<select data-f="cat"></select></label>
-    <label>Payment<select data-f="pt"></select></label>
-    <label>From<select data-f="moFrom"></select></label>
-    <label>To<select data-f="moTo"></select></label>
-    <button class="reset" id="reset">Reset filters</button>
-    <span class="count" id="count"></span>
+  <div class="masthead">
+    <h1>Olist marketplace: from order to review</h1>
+    <p id="scope"></p>
   </div>
 
-  <!-- OVERVIEW -->
-  <section class="page active" id="page-overview">
-    <div class="kpis" id="kpis"></div>
-    <div class="grid">
-      <div class="card span-8">
-        <h2>Monthly revenue</h2>
-        <div class="desc">Item value + freight of delivered orders, by purchase month (R$).</div>
-        <div class="chart" id="c-rev"></div>
+  <section class="hero" aria-label="Headline finding">
+    <div>
+      <h2 id="hero-title">A late parcel costs two stars.</h2>
+      <p class="lede" id="hero-lede"></p>
+    </div>
+    <div class="drop">
+      <div class="chart" id="c-drop"></div>
+      <div class="caption" id="drop-caption"></div>
+    </div>
+  </section>
+
+  <ol class="journey" role="tablist" aria-label="Order journey">
+    <li class="progress" id="progress" aria-hidden="true"></li>
+    <li><button role="tab" data-page="purchase" aria-selected="true"><span class="stop"></span><span class="name">Purchase</span><span class="fig" id="j-purchase"></span></button></li>
+    <li><button role="tab" data-page="delivery" aria-selected="false"><span class="stop"></span><span class="name">Delivery</span><span class="fig" id="j-delivery"></span></button></li>
+    <li><button role="tab" data-page="review" aria-selected="false"><span class="stop"></span><span class="name">Review</span><span class="fig" id="j-review"></span></button></li>
+    <li><button role="tab" data-page="return" aria-selected="false"><span class="stop"></span><span class="name">Return visit</span><span class="fig" id="j-return"></span></button></li>
+  </ol>
+</div>
+
+<div class="filterbar">
+  <div class="wrap" id="filters">
+    <label>Region <select data-f="rg"></select></label>
+    <label>State <select data-f="st"></select></label>
+    <label>Category <select data-f="cat"></select></label>
+    <label>Payment <select data-f="pt"></select></label>
+    <label>From <select data-f="moFrom"></select></label>
+    <label>to <select data-f="moTo"></select></label>
+    <button class="clear" id="reset" hidden>Clear filters</button>
+    <span class="count" id="count"></span>
+  </div>
+</div>
+
+<main class="wrap">
+  <!-- PURCHASE -->
+  <section class="page active" id="page-purchase" role="tabpanel">
+    <div class="page-intro">
+      <h2>Sales grew eightfold, then levelled off</h2>
+      <p>Revenue climbed through 2017, peaked at Black Friday, and has held near R$1M a month since. Health, gifts and home goods lead the category mix.</p>
+    </div>
+    <div class="row r-2-1">
+      <div class="sheet">
+        <h3>Revenue by month</h3>
+        <p class="note">Item value plus freight for delivered orders, by month of purchase.</p>
+        <div class="chart" id="c-area"></div>
       </div>
-      <div class="card span-4">
-        <h2>Key takeaways</h2>
-        <div class="desc">Recomputed live for the current filters.</div>
-        <ul class="takeaways" id="takeaways"></ul>
+      <div class="figures" id="figures"></div>
+    </div>
+    <div class="row r-3-2">
+      <div class="bare">
+        <h3>Where the revenue comes from</h3>
+        <p class="note">Top 12 categories, ranked by revenue. The category is that of each order's most expensive item.</p>
+        <div id="rank"></div>
       </div>
-      <div class="card span-12">
-        <h2>Top 10 categories by revenue</h2>
-        <div class="desc">Category of each order's most expensive item. Hover for orders, review score and late rate.</div>
-        <div class="chart" id="c-topcat"></div>
+      <div class="bare">
+        <h3>Bigger baskets are paid in instalments</h3>
+        <p class="note">Average and median order value by the number of instalments.</p>
+        <div class="chart" id="c-ins"></div>
+        <p class="aside-note" id="pay-note"></p>
       </div>
     </div>
   </section>
 
   <!-- DELIVERY -->
-  <section class="page" id="page-delivery">
-    <div class="kpis" id="kpis-del"></div>
-    <div class="grid">
-      <div class="card span-7">
-        <h2>Review score by delivery timing</h2>
-        <div class="desc">Days delivered before or after the date promised at checkout.</div>
-        <div class="chart" id="c-bucket"></div>
-        <div class="legend"><span><i style="background:var(--s1)"></i>On or before estimate</span><span><i style="background:var(--bad)"></i>Late</span></div>
+  <section class="page" id="page-delivery" role="tabpanel">
+    <div class="page-intro">
+      <h2>Fast in the Southeast, slow everywhere else</h2>
+      <p>Most sellers ship from São Paulo, so distance sets the pace. Click a state on the map to filter the whole dashboard.</p>
+    </div>
+    <div class="row r-7-5">
+      <div class="sheet">
+        <h3>Average days from purchase to doorstep</h3>
+        <p class="note">Darker states wait longer. States with fewer than 20 orders are shown in outline.</p>
+        <div class="chart" id="c-map"></div>
       </div>
-      <div class="card span-5">
-        <h2>Late delivery rate by month</h2>
-        <div class="desc">Share of orders delivered after the estimated date.</div>
-        <div class="chart" id="c-latem"></div>
+      <div>
+        <div class="bare">
+          <h3>Most parcels arrive well before the promise</h3>
+          <p class="note">Days between actual and estimated delivery. Left of zero is early; right of zero is late.</p>
+          <div class="chart" id="c-delay"></div>
+          <p class="aside-note" id="delay-note"></p>
+        </div>
       </div>
-      <div class="card span-7">
-        <h2>Average delivery time by state</h2>
-        <div class="desc">Days from purchase to delivery, slowest first. Hover for late rate and review score.</div>
-        <div class="chart" id="c-state"></div>
-      </div>
-      <div class="card span-5">
-        <h2>By region</h2>
-        <div class="desc">Delivery speed, lateness and satisfaction.</div>
-        <div class="table-scroll" id="t-region"></div>
-        <div class="callout" id="est-note"></div>
+    </div>
+    <div class="row">
+      <div class="sheet">
+        <h3>Late deliveries surge when volume does</h3>
+        <p class="note">Share of orders delivered after the estimated date, by month of purchase. Bars show order volume.</p>
+        <div class="chart" id="c-late"></div>
       </div>
     </div>
   </section>
 
-  <!-- RETENTION -->
-  <section class="page" id="page-retention">
-    <div class="kpis" id="kpis-ret"></div>
-    <div class="grid">
-      <div class="card span-12">
-        <h2>Cohort retention</h2>
-        <div class="desc">Customers grouped by month of first purchase. Each cell = % of that cohort who ordered again N months later. Darker = higher. Blank = not enough time has passed.</div>
+  <!-- REVIEW -->
+  <section class="page" id="page-review" role="tabpanel">
+    <div class="page-intro">
+      <h2>One day late is enough to lose the customer's goodwill</h2>
+      <p>Early and on-time orders collect mostly five-star reviews. From the first day late, one-star reviews take over.</p>
+    </div>
+    <div class="row r-3-2">
+      <div class="sheet">
+        <h3>How customers rate each delivery</h3>
+        <p class="note">Share of 1 to 5 star reviews, by days early or late.</p>
+        <div class="chart" id="c-stars"></div>
+        <div class="legend" id="stars-legend"></div>
+      </div>
+      <div class="bare">
+        <h3>Where bad reviews come from</h3>
+        <p class="note">Every 1–2★ review, as 100 squares. Red squares are late deliveries.</p>
+        <div class="chart" id="c-waffle"></div>
+        <p class="aside-note" id="waffle-note"></p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="bare">
+        <h3>Lowest-rated categories, and how often they arrive late</h3>
+        <p class="note">Categories with 100+ reviewed orders in the current filter. Dot = average review; the bar shows the late rate.</p>
+        <div class="chart" id="c-catrev"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RETURN -->
+  <section class="page" id="page-return" role="tabpanel">
+    <div class="page-intro">
+      <h2>Almost nobody comes back</h2>
+      <p>Olist works as a one-time channel: growth comes from new customers. That makes the few high-value buyers worth targeting by name.</p>
+    </div>
+    <div class="statements" id="statements"></div>
+    <div class="row">
+      <div class="sheet">
+        <h3>Who orders again, month by month</h3>
+        <p class="note">Customers grouped by month of first purchase (cohort size in brackets). Each cell is the share who ordered again that many months later.</p>
         <div class="chart" id="c-cohort"></div>
       </div>
-      <div class="card span-5">
-        <h2>When do repeat customers come back?</h2>
-        <div class="desc">Days between a customer's first and second order.</div>
-        <div class="chart" id="c-gap"></div>
-        <div class="callout" id="gap-note"></div>
+    </div>
+    <div class="row r-1-1">
+      <div class="sheet">
+        <h3>A third of customers bring in over half the revenue</h3>
+        <p class="note">Each band links a segment's share of customers (left) to its share of revenue (right). Segments come from recency and spend scores (1–5) plus whether the customer ordered again.</p>
+        <div class="chart" id="c-rfm"></div>
       </div>
-      <div class="card span-7">
-        <h2>RFM customer segments</h2>
-        <div class="desc">Recency and spend scored 1–5 (quintiles); frequency = repeat vs one-time. Shares are for the filtered orders.</div>
-        <div class="table-scroll" id="t-rfm"></div>
+      <div class="bare">
+        <h3>What to do with each segment</h3>
+        <p class="note">Share of customers and of revenue in the current filter.</p>
+        <ul class="segs" id="segs"></ul>
       </div>
     </div>
   </section>
+</main>
 
-  <!-- CATEGORIES & PAYMENTS -->
-  <section class="page" id="page-categories">
-    <div class="grid">
-      <div class="card span-5">
-        <h2>Payment method mix</h2>
-        <div class="desc">Method of each order's largest payment.</div>
-        <div class="chart" id="c-pay"></div>
-        <h2 style="margin-top:22px">Average order value by payment method</h2>
-        <div class="desc">R$ per order.</div>
-        <div class="chart" id="c-pay-aov"></div>
-      </div>
-      <div class="card span-7">
-        <h2>Average order value by instalments</h2>
-        <div class="desc">Orders paid in more instalments are much larger baskets.</div>
-        <div class="chart" id="c-ins"></div>
-      </div>
-      <div class="card span-12">
-        <h2>Category scorecard</h2>
-        <div class="desc">Categories with 30+ orders in the current filter. Click a header to sort. Bold = best among rows shown (lowest for delivery days and late rate).</div>
-        <div class="table-scroll" id="t-cat"></div>
-      </div>
-    </div>
-  </section>
-
+<div class="wrap">
   <footer>
-    Data: Olist Brazilian E-Commerce Public Dataset (Kaggle), delivered orders Jan 2017 – Aug 2018. Late = delivered after the estimated date.
-    Patterns show association, not causation.
+    <p>Data: Olist Brazilian E-Commerce Public Dataset (Kaggle, CC BY-NC-SA 4.0). Delivered orders purchased Jan 2017 – Aug 2018. Late means delivered after the estimated date. Revenue is item price plus freight. The patterns shown are associations, not proof of cause.</p>
   </footer>
 </div>
 <div id="tip" role="tooltip"></div>
@@ -279,55 +346,60 @@ const DATA = /*__DATA__*/null;
 (function () {
   "use strict";
   const C = DATA.cols, D = DATA.dims, N = DATA.meta.orders;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const COL = { ink: css("--ink"), ink2: css("--ink-2"), muted: css("--muted"), rule: css("--rule"), route: css("--route"), routeSoft: css("--route-soft"),
+                late: css("--late"), lateSoft: css("--late-soft"), kraft: css("--kraft"), kraftSoft: css("--kraft-soft"), sheet: css("--sheet") };
+  // Sequential navy ramp (light -> dark) for magnitude
+  const SEQ = ["#e6ebf2", "#cdd7e5", "#b0bfd5", "#90a4c2", "#7089ae", "#526e98", "#39557f", "#253c64", "#142038"];
+  // Star palette: diverging red -> grey -> green
+  const STAR = ["#cf3e2b", "#e8907f", "#c9ced6", "#7fbfa7", "#127a5b"];
 
-  // ---------- formatting ----------
-  const nf0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
-  const nf1 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-  const nf2 = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtInt = v => nf0.format(Math.round(v));
-  const fmt1 = v => nf1.format(v);
-  const fmt2 = v => nf2.format(v);
-  const pct = (v, d = 1) => (v * 100).toFixed(d) + "%";
-  const compact = v => {
-    const a = Math.abs(v);
-    if (a >= 1e6) return (v / 1e6).toFixed(a >= 1e7 ? 1 : 2).replace(/\.?0+$/, "") + "M";
-    if (a >= 1e4) return (v / 1e3).toFixed(0) + "K";
-    if (a >= 1e3) return (v / 1e3).toFixed(1).replace(/\.0$/, "") + "K";
-    return fmtInt(v);
-  };
+  // ---------- format ----------
+  const nf = d => new Intl.NumberFormat("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const f0 = nf(0), f1 = nf(1), f2 = nf(2);
+  const int = v => f0.format(Math.round(v));
+  const pct = (v, d = 1) => nf(d).format(v * 100) + "%";
+  const compact = v => { const a = Math.abs(v); if (a >= 1e6) return f2.format(v / 1e6).replace(/\.?0+$/, "") + "M"; if (a >= 1e3) return f0.format(v / 1e3) + "K"; return int(v); };
   const brl = v => "R$" + compact(v);
-  const brlFull = v => "R$" + fmtInt(v);
-  const prettyCat = s => s.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-  const monthLabel = m => { const [y, mm] = m.split("-"); return new Date(+y, +mm - 1, 1).toLocaleString("en-US", { month: "short" }) + " " + y.slice(2); };
+  const cat = s => { const t = s.replace(/_/g, " "); return t.charAt(0).toUpperCase() + t.slice(1); };
+  const mon = m => { const [y, mm] = m.split("-"); return new Date(+y, +mm - 1, 1).toLocaleString("en-US", { month: "short" }) + " " + y.slice(2); };
+  const monLong = m => { const [y, mm] = m.split("-"); return new Date(+y, +mm - 1, 1).toLocaleString("en-US", { month: "long", year: "numeric" }); };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const SEQ = ["#cde2fb", "#b7d3f6", "#9ec5f4", "#86b6ef", "#6da7ec", "#5598e7", "#3987e5", "#2a78d6", "#256abf", "#1c5cab", "#184f95", "#104281", "#0d366b"];
+  const tipHtml = (title, rows) => "<b>" + esc(title) + "</b>" + rows.map(([k, v]) => `<div class="r"><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("");
+  const svg = (w, h, label, body) => `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">${body}</svg>`;
+  function niceMax(v) { if (!(v > 0)) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+  function ticks(max) { for (const t of [4, 5, 2, 3]) { const s = max / t, m = s / Math.pow(10, Math.floor(Math.log10(s))); if ([1, 2, 2.5, 5].some(x => Math.abs(m - x) < 1e-9)) return t; } return 4; }
+  const empty = (el, msg) => { el.innerHTML = `<div class="empty">${msg || "No orders match these filters. Clear a filter to see results."}</div>`; };
 
-  // ---------- state & filtering ----------
-  const stateRegionIdx = D.stateRegion.map(r => D.regions.indexOf(r));
-  const state = { rg: -1, st: -1, cat: -1, pt: -1, moFrom: 0, moTo: D.months.length - 1, page: "overview", sortKey: "revenue", sortDir: -1 };
-
+  // ---------- data & filters ----------
+  const regionOf = D.stateRegion.map(r => D.regions.indexOf(r));
+  const F0 = { rg: -1, st: -1, cat: -1, pt: -1, moFrom: 0, moTo: D.months.length - 1 };
+  const state = Object.assign({ page: "purchase" }, F0);
   function filtered() {
-    const out = new Int32Array(N); let k = 0;
-    const { rg, st, cat, pt, moFrom, moTo } = state;
+    const out = new Int32Array(N); let k = 0; const s = state;
     for (let i = 0; i < N; i++) {
-      if (st >= 0 && C.st[i] !== st) continue;
-      if (rg >= 0 && stateRegionIdx[C.st[i]] !== rg) continue;
-      if (cat >= 0 && C.cat[i] !== cat) continue;
-      if (pt >= 0 && C.pt[i] !== pt) continue;
-      if (C.mo[i] < moFrom || C.mo[i] > moTo) continue;
+      if (s.st >= 0 && C.st[i] !== s.st) continue;
+      if (s.rg >= 0 && regionOf[C.st[i]] !== s.rg) continue;
+      if (s.cat >= 0 && C.cat[i] !== s.cat) continue;
+      if (s.pt >= 0 && C.pt[i] !== s.pt) continue;
+      if (C.mo[i] < s.moFrom || C.mo[i] > s.moTo) continue;
       out[k++] = i;
     }
     return out.subarray(0, k);
   }
-  const blank = () => ({ n: 0, val: 0, dd: 0, late: 0, rsum: 0, rn: 0, bad: 0 });
-  function add(o, i) {
-    o.n++; o.val += C.val[i] / 100; o.dd += C.dd[i] / 10; o.late += C.late[i];
-    if (C.rs[i]) { o.rsum += C.rs[i]; o.rn++; if (C.rs[i] <= 2) o.bad++; }
-  }
-  function group(keyFn, n, idx) { const g = Array.from({ length: n }, blank); for (const i of idx) { const k = keyFn(i); if (k >= 0) add(g[k], i); } return g; }
+  const blank = () => ({ n: 0, val: 0, dd: 0, late: 0, rsum: 0, rn: 0, bad: 0, stars: [0, 0, 0, 0, 0] });
+  function add(o, i) { o.n++; o.val += C.val[i] / 100; o.dd += C.dd[i] / 10; o.late += C.late[i]; const r = C.rs[i]; if (r) { o.rsum += r; o.rn++; o.stars[r - 1]++; if (r <= 2) o.bad++; } }
+  function group(fn, n, idx) { const g = Array.from({ length: n }, blank); for (const i of idx) { const k = fn(i); if (k >= 0) add(g[k], i); } return g; }
   function total(idx) { const o = blank(); for (const i of idx) add(o, i); return o; }
-  const avgRev = g => g.rn ? g.rsum / g.rn : NaN;
+  const avgR = g => g.rn ? g.rsum / g.rn : NaN;
+  const months = () => { const a = []; for (let m = state.moFrom; m <= state.moTo; m++) a.push(m); return a; };
+  function splitLate(idx) { const L = blank(), O = blank(); for (const i of idx) add(C.late[i] ? L : O, i); return { L, O }; }
+  function retention(idx) {
+    const cust = new Set(); let same = 0, later = 0, repVal = 0, totVal = 0; const rep = new Set();
+    for (const i of idx) { cust.add(C.cu[i]); if (C.on[i] === 2) { rep.add(C.cu[i]); if (C.gap[i] === 0) same++; else later++; } }
+    for (const i of idx) { totVal += C.val[i]; if (C.on[i] > 1 || rep.has(C.cu[i])) repVal += C.val[i]; }
+    return { customers: cust.size, same, later, second: same + later, repShare: totVal ? repVal / totVal : 0 };
+  }
 
   // ---------- tooltip ----------
   const tip = document.getElementById("tip");
@@ -336,382 +408,481 @@ const DATA = /*__DATA__*/null;
     if (!t) { tip.style.opacity = 0; return; }
     tip.innerHTML = t.getAttribute("data-tip");
     const r = tip.getBoundingClientRect();
-    let x = e.clientX + 14, y = e.clientY + 14;
-    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
-    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+    let x = e.clientX + 16, y = e.clientY + 16;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 16;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 16;
     tip.style.left = x + "px"; tip.style.top = y + "px"; tip.style.opacity = 1;
   });
-  const tipHtml = (title, rows) => "<b>" + esc(title) + "</b>" + rows.map(([k, v]) => esc(k) + ": <strong>" + esc(v) + "</strong>").join("<br>");
 
-  // ---------- chart primitives ----------
-  function niceMax(v) {
-    if (!(v > 0)) return 1;
-    const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p;
-    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
-  }
-  function hBarPath(x, y, w, h) {
-    const r = Math.min(4, w, h / 2);
-    if (w <= 0) return "";
-    return `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 ${-r},${r}h${-(w - r)}z`;
-  }
-  function vBarPath(x, y, w, h) {
-    const r = Math.min(4, h, w / 2);
-    if (h <= 0) return "";
-    return `M${x},${y + h}v${-(h - r)}a${r},${r} 0 0 1 ${r},${-r}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - r}z`;
-  }
-  // Pick a tick count that gives round steps (e.g. 5 -> 1.0 steps, 25% -> 5% steps)
-  function tickCount(max) {
-    for (const t of [4, 5, 2, 3]) {
-      const step = max / t, m = step / Math.pow(10, Math.floor(Math.log10(step)));
-      if ([1, 2, 2.5, 5].some(x => Math.abs(m - x) < 1e-9)) return t;
+  // =====================================================================
+  // HERO: the star drop
+  // =====================================================================
+  let heroAnimated = false;
+  function renderHero(idx, T) {
+    const { L, O } = splitLate(idx);
+    const el = document.getElementById("c-drop");
+    if (L.rn < 20 || O.rn < 20) {
+      document.getElementById("hero-title").textContent = "Late parcels, lower stars.";
+      document.getElementById("hero-lede").textContent = "Too few late deliveries in this selection to compare. Clear a filter to see the full picture.";
+      empty(el, "Not enough reviewed orders to compare late and on-time deliveries.");
+      document.getElementById("drop-caption").innerHTML = ""; return;
     }
-    return 4;
-  }
-  const svgOpen = (w, h, label) => `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">`;
-  const empty = (el, msg) => { el.innerHTML = `<div class="empty">${msg || "No orders match these filters."}</div>`; };
+    const on = avgR(O), lt = avgR(L), drop = on - lt;
+    const words = ["no", "half a", "one", "one and a half", "two", "two and a half", "three"];
+    const half = Math.round(drop * 2);
+    document.getElementById("hero-title").textContent = half <= 0 ? "Late parcels score about the same." : `A late parcel costs ${words[Math.min(half, 6)]} star${half === 2 ? "" : "s"}.`;
+    const badShare = (L.bad + O.bad) ? L.bad / (L.bad + O.bad) : 0;
+    document.getElementById("hero-lede").innerHTML =
+      `Across ${int(T.n)} delivered orders, those that arrived after the promised date averaged <b>${f2.format(lt)}★</b> against <b>${f2.format(on)}★</b> on time. ` +
+      `Late orders were <b>${pct(L.n / T.n)}</b> of deliveries but <b>${pct(badShare, 0)}</b> of all one- and two-star reviews.`;
 
-  function hbars(el, rows, o) {
-    if (!rows.length) return empty(el);
-    const W = el.clientWidth || 400, labelW = o.labelW || 110, valW = 70, rowH = o.rowH || 28, bh = Math.min(18, rowH - 8);
-    const H = rows.length * rowH + 4;
-    const max = niceMax(Math.max(...rows.map(r => r.value)));
-    const plotW = Math.max(40, W - labelW - valW);
-    let s = svgOpen(W, H, o.aria || "bar chart");
-    s += `<line class="baseline" x1="${labelW}" x2="${labelW}" y1="0" y2="${H}"/>`;
-    rows.forEach((r, k) => {
-      const y = k * rowH, w = Math.max(0, r.value / max * plotW);
-      s += `<g data-tip="${esc(r.tip)}"><rect class="band" x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/>`;
-      s += `<text class="lbl" x="${labelW - 10}" y="${y + rowH / 2 + 4}" text-anchor="end">${esc(r.label)}</text>`;
-      s += `<path d="${hBarPath(labelW, y + (rowH - bh) / 2, w, bh)}" fill="${r.color || css("--s1")}"/>`;
-      s += `<text class="val" x="${labelW + w + 8}" y="${y + rowH / 2 + 4}">${esc(o.fmt(r.value))}</text></g>`;
-    });
-    el.innerHTML = s + "</svg>";
-  }
-
-  function vbars(el, rows, o) {
-    if (!rows.length || rows.every(r => !(r.value > 0))) return empty(el);
-    const W = el.clientWidth || 400, H = o.height || 240, padL = 50, padB = o.padB || 26, padT = 20;
-    const max = o.max || niceMax(Math.max(...rows.map(r => r.value)));
-    const plotW = W - padL - 6, plotH = H - padB - padT, band = plotW / rows.length;
-    const bw = Math.min(24, band - 3);
-    let s = svgOpen(W, H, o.aria || "column chart");
-    const nt = tickCount(max);
-    for (let t = 0; t <= nt; t++) {
-      const v = max * t / nt, y = padT + plotH - v / max * plotH;
-      s += `<line class="gridline" x1="${padL}" x2="${W - 6}" y1="${y}" y2="${y}"/><text x="${padL - 6}" y="${y + 4}" text-anchor="end">${esc((o.axisFmt || compact)(v))}</text>`;
+    const W = el.clientWidth || 600, H = 150, pl = 14, pr = 14, axisY = 96;
+    const x = v => pl + (v - 1) / 4 * (W - pl - pr);
+    let b = "";
+    // scale track
+    b += `<line x1="${x(1)}" x2="${x(5)}" y1="${axisY}" y2="${axisY}" stroke="${COL.rule}" stroke-width="6" stroke-linecap="round"/>`;
+    for (let s = 1; s <= 5; s++) {
+      b += `<text x="${x(s)}" y="${axisY + 28}" text-anchor="middle" class="t-ink2" style="font-size:13px">${"★".repeat(s)}</text>`;
+      b += `<line x1="${x(s)}" x2="${x(s)}" y1="${axisY - 7}" y2="${axisY + 7}" stroke="${COL.muted}" stroke-width="1"/>`;
     }
-    const every = o.labelEvery || Math.ceil(rows.length / Math.max(1, Math.floor(plotW / 56)));
-    rows.forEach((r, k) => {
-      const x = padL + k * band, h = Math.max(0, (r.value || 0) / max * plotH), y = padT + plotH - h;
-      s += `<g data-tip="${esc(r.tip)}"><rect class="band" x="${x}" y="${padT}" width="${band}" height="${plotH}" fill="transparent"/>`;
-      s += `<path d="${vBarPath(x + (band - bw) / 2, y, bw, h)}" fill="${r.color || css("--s1")}"/>`;
-      if (o.showValues && r.value > 0) s += `<text class="val" x="${x + band / 2}" y="${y - 6}" text-anchor="middle">${esc(o.fmt(r.value))}</text>`;
-      if (k % every === 0) {
-        const lines = String(r.short || r.label).split("\n");
-        lines.forEach((ln, j) => s += `<text x="${x + band / 2}" y="${H - padB + 16 + j * 13}" text-anchor="middle">${esc(ln)}</text>`);
+    // drop segment
+    b += `<line id="dropseg" x1="${x(on)}" x2="${x(lt)}" y1="${axisY}" y2="${axisY}" stroke="${COL.late}" stroke-width="6" stroke-linecap="round" opacity="0.35"/>`;
+    // markers
+    const mk = (v, color, label, sub, anchorLeft, id) => {
+      const lx = x(v);
+      return `<g id="${id}" data-tip="${esc(tipHtml(label, [["Average review", f2.format(v) + "★"], ["Orders reviewed", int(id === "mk-late" ? L.rn : O.rn)]]))}">` +
+        `<line x1="${lx}" x2="${lx}" y1="${axisY - 46}" y2="${axisY}" stroke="${color}" stroke-width="1.5"/>` +
+        `<circle cx="${lx}" cy="${axisY}" r="10" fill="${color}" stroke="${COL.sheet}" stroke-width="3"/>` +
+        `<text x="${lx + (anchorLeft ? -8 : 8)}" y="${axisY - 34}" text-anchor="${anchorLeft ? "end" : "start"}" class="t-serif" style="font-size:30px;font-weight:700;fill:${color}">${f2.format(v)}</text>` +
+        `<text x="${lx + (anchorLeft ? -8 : 8)}" y="${axisY - 14}" text-anchor="${anchorLeft ? "end" : "start"}" class="t-ink2" style="font-size:13px">${esc(sub)}</text></g>`;
+    };
+    b += mk(lt, COL.late, "Delivered late", "delivered late", false, "mk-late");
+    b += mk(on, COL.route, "On time or early", "on time or early", true, "mk-on");
+    el.innerHTML = svg(W, H, `Average review ${f2.format(on)} on time versus ${f2.format(lt)} late`, b);
+    document.getElementById("drop-caption").innerHTML =
+      `<span class="lt"><b>${pct(L.bad / L.rn, 0)}</b> of late orders get 1–2★</span><span class="on"><b>${pct(O.bad / O.rn, 0)}</b> of on-time orders do</span>`;
+
+    // one orchestrated motion: on first load the late marker slides down from the on-time score
+    if (!heroAnimated && !/static/.test(location.search)) { heroAnimated = true; el.style.setProperty("--dx", (x(on) - x(lt)) + "px"); el.classList.add("drop-anim"); }
+    else { heroAnimated = true; el.classList.remove("drop-anim"); }
+  }
+
+  // =====================================================================
+  // JOURNEY figures
+  // =====================================================================
+  function renderJourney(idx, T) {
+    const r = retention(idx);
+    document.getElementById("j-purchase").textContent = T.n ? brl(T.val) + " revenue" : "–";
+    document.getElementById("j-delivery").textContent = T.n ? pct(T.late / T.n) + " late" : "–";
+    document.getElementById("j-review").textContent = T.rn ? f2.format(avgR(T)) + "★ average" : "–";
+    document.getElementById("j-return").textContent = r.customers ? pct(r.later / r.customers) + " come back" : "–";
+  }
+
+  // =====================================================================
+  // PURCHASE
+  // =====================================================================
+  function sparkline(vals, color) {
+    const w = 96, h = 30, v = vals.filter(isFinite); if (v.length < 2) return "";
+    const lo = Math.min(...v), hi = Math.max(...v), y = t => h - 3 - (t - lo) / (hi - lo || 1) * (h - 6);
+    let d = ""; vals.forEach((t, k) => { if (isFinite(t)) d += (d ? "L" : "M") + (k / (vals.length - 1) * w).toFixed(1) + "," + y(t).toFixed(1); });
+    const lx = w, ly = y(vals[vals.length - 1]);
+    return svg(w, h, "trend", `<path d="${d}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>${isFinite(ly) ? `<circle cx="${lx}" cy="${ly}" r="2.5" fill="${color}"/>` : ""}`);
+  }
+
+  function renderPurchase(idx, T) {
+    const gm = group(i => C.mo[i], D.months.length, idx), ms = months();
+    // area chart
+    const el = document.getElementById("c-area");
+    if (!T.n) empty(el); else {
+      const W = el.clientWidth || 700, H = 300, pl = 54, pr = 12, pt = 26, pb = 28;
+      const vals = ms.map(m => gm[m].val), max = niceMax(Math.max(...vals) * 1.05), nt = ticks(max);
+      const pw = W - pl - pr, ph = H - pt - pb, x = k => pl + (ms.length === 1 ? pw / 2 : k / (ms.length - 1) * pw), y = v => pt + ph - v / max * ph;
+      let b = "";
+      for (let t = 0; t <= nt; t++) { const v = max * t / nt; b += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}"/><text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" class="t-num">${t ? "R$" + compact(v) : "0"}</text>`; }
+      let d = ""; vals.forEach((v, k) => d += (k ? "L" : "M") + x(k) + "," + y(v));
+      b += `<path d="${d}L${x(vals.length - 1)},${y(0)}L${x(0)},${y(0)}Z" fill="${COL.ink}" opacity="0.08"/>`;
+      b += `<path d="${d}" fill="none" stroke="${COL.ink}" stroke-width="2.25" stroke-linejoin="round"/>`;
+      // annotate the peak
+      let pk = 0; vals.forEach((v, k) => { if (v > vals[pk]) pk = k; });
+      if (ms.length > 2) {
+        const label = D.months[ms[pk]] === "2017-11" ? "Black Friday" : "Peak month";
+        b += `<circle cx="${x(pk)}" cy="${y(vals[pk])}" r="4.5" fill="${COL.kraft}" stroke="${COL.sheet}" stroke-width="2"/>`;
+        b += `<text x="${x(pk)}" y="${y(vals[pk]) - 12}" text-anchor="middle" style="fill:${COL.kraft};font-weight:600;font-size:12.5px">${label}: R$${compact(vals[pk])}</text>`;
       }
-      s += "</g>";
-    });
-    s += `<line class="baseline" x1="${padL}" x2="${W - 6}" y1="${padT + plotH}" y2="${padT + plotH}"/>`;
-    el.innerHTML = s + "</svg>";
-  }
-
-  function line(el, pts, o) {
-    if (!pts.some(p => isFinite(p.value))) return empty(el);
-    const W = el.clientWidth || 600, H = o.height || 240, padL = 46, padR = 14, padB = 26, padT = 16;
-    const hi = niceMax(Math.max(...pts.filter(p => isFinite(p.value)).map(p => p.value)) * 1.1), lo = 0;
-    const plotW = W - padL - padR, plotH = H - padB - padT;
-    const xAt = k => padL + (pts.length === 1 ? plotW / 2 : k / (pts.length - 1) * plotW);
-    const yAt = v => padT + plotH - (v - lo) / (hi - lo) * plotH;
-    let s = svgOpen(W, H, o.aria || "line chart");
-    const nt = tickCount(hi);
-    for (let t = 0; t <= nt; t++) {
-      const v = hi * t / nt, y = yAt(v);
-      s += `<line class="gridline" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/><text x="${padL - 6}" y="${y + 4}" text-anchor="end">${esc(o.axisFmt(v))}</text>`;
+      const every = Math.ceil(ms.length / Math.max(1, Math.floor(pw / 64)));
+      ms.forEach((m, k) => {
+        if (k % every === 0) b += `<text x="${x(k)}" y="${H - 6}" text-anchor="middle">${mon(D.months[m])}</text>`;
+        const bw = pw / Math.max(1, ms.length - 1), g = gm[m];
+        b += `<g class="hov" data-tip="${esc(tipHtml(monLong(D.months[m]), [["Revenue", "R$" + int(g.val)], ["Orders", int(g.n)], ["Avg order", g.n ? "R$" + f2.format(g.val / g.n) : "–"]]))}">` +
+             `<rect class="bgband" x="${x(k) - bw / 2}" y="${pt}" width="${bw}" height="${ph}" fill="transparent"/>` +
+             `<line class="hl" x1="${x(k)}" x2="${x(k)}" y1="${pt}" y2="${pt + ph}" stroke="${COL.ink2}" stroke-dasharray="0"/>` +
+             `<circle class="hl" cx="${x(k)}" cy="${y(g.val)}" r="4.5" fill="${COL.ink}" stroke="${COL.sheet}" stroke-width="2"/></g>`;
+      });
+      b += `<line class="base" x1="${pl}" x2="${W - pr}" y1="${y(0)}" y2="${y(0)}"/>`;
+      el.innerHTML = svg(W, H, "Revenue by month", b);
     }
-    const color = o.color || css("--s1");
-    let d = "", on = false;
-    pts.forEach((p, k) => { if (!isFinite(p.value)) { on = false; return; } d += (on ? "L" : "M") + xAt(k) + "," + yAt(p.value); on = true; });
-    s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
-    const band = plotW / Math.max(1, pts.length - 1);
-    const every = Math.ceil(pts.length / Math.max(1, Math.floor(plotW / 56)));
-    pts.forEach((p, k) => {
-      const x = xAt(k);
-      if (k % every === 0) s += `<text x="${x}" y="${H - 8}" text-anchor="middle">${esc(p.short)}</text>`;
-      if (!isFinite(p.value)) return;
-      s += `<g class="hov" data-tip="${esc(p.tip)}"><rect class="bandbg" x="${x - band / 2}" y="${padT}" width="${band}" height="${plotH}" fill="transparent"/>`;
-      s += `<line class="guide" x1="${x}" x2="${x}" y1="${padT}" y2="${padT + plotH}" stroke="var(--axis)"/>`;
-      s += `<circle class="dot-h" cx="${x}" cy="${yAt(p.value)}" r="4.5" fill="${color}" stroke="var(--surface)" stroke-width="2"/></g>`;
-    });
-    if (o.markMax) {
-      let mk = -1, mv = -Infinity; pts.forEach((p, k) => { if (isFinite(p.value) && p.value > mv) { mv = p.value; mk = k; } });
-      s += `<circle cx="${xAt(mk)}" cy="${yAt(mv)}" r="4" fill="${color}"/><text class="val" x="${xAt(mk)}" y="${yAt(mv) - 9}" text-anchor="middle">${esc(o.fmt(mv))} (${esc(pts[mk].short)})</text>`;
-    }
-    s += `<line class="baseline" x1="${padL}" x2="${W - padR}" y1="${padT + plotH}" y2="${padT + plotH}"/>`;
-    el.innerHTML = s + "</svg>";
-  }
 
-  function stackbar(el, parts) {
-    const tot = parts.reduce((a, p) => a + p.value, 0);
-    if (!tot) return empty(el);
-    const W = el.clientWidth || 400, bh = 26, gap = 2, usable = W - gap * (parts.length - 1);
-    let s = svgOpen(W, bh, "composition"), x = 0;
-    parts.forEach((p, k) => {
-      const w = p.value / tot * usable;
-      s += `<rect data-tip="${esc(tipHtml(p.label, [["Orders", fmtInt(p.value)], ["Share", pct(p.value / tot)]]))}" x="${x}" y="0" width="${Math.max(0, w)}" height="${bh}" rx="${k === 0 || k === parts.length - 1 ? 4 : 1}" fill="${p.color}"/>`;
-      x += w + gap;
-    });
-    el.innerHTML = s + "</svg><div class=\"legend\">" + parts.map(p => `<span><i style="background:${p.color}"></i>${esc(p.label)} ${pct(p.value / tot)}</span>`).join("") + "</div>";
-  }
+    // figures with sparklines
+    const cust = new Set(); for (const i of idx) cust.add(C.cu[i]);
+    const series = f => ms.map(m => gm[m].n ? f(gm[m]) : NaN);
+    const figs = [
+      ["Revenue", brl(T.val), "R$" + int(T.val) + " total", series(g => g.val)],
+      ["Delivered orders", int(T.n), "across " + ms.length + " months", series(g => g.n)],
+      ["Average order", T.n ? "R$" + f2.format(T.val / T.n) : "–", "items plus freight", series(g => g.val / g.n)],
+      ["Customers", int(cust.size), "unique people", null],
+    ];
+    document.getElementById("figures").innerHTML = figs.map(([k, v, s, ser]) =>
+      `<div class="figure"><span class="k">${k}</span><span class="v">${esc(v)}</span><span>${ser ? sparkline(ser, COL.ink2) : ""}</span><span class="s">${esc(s)}</span></div>`).join("");
 
-  function kpiCards(id, cards) {
-    document.getElementById(id).innerHTML = cards.map(([l, v, n]) =>
-      `<div class="card kpi"><div class="label">${esc(l)}</div><div class="value">${esc(v)}</div><div class="note">${esc(n || "")}</div></div>`).join("");
-  }
-
-  function table(el, cols, rows, opts = {}) {
-    if (!rows.length) return empty(el);
-    const best = cols.map(c => c.best ? (c.best === "min" ? Math.min : Math.max)(...rows.map(r => c.get(r)).filter(isFinite)) : null);
-    const arrow = k => opts.sortable && state.sortKey === k ? (state.sortDir < 0 ? " ↓" : " ↑") : "";
-    let h = "<table><thead><tr>" + cols.map(c => `<th data-sort="${c.key}" ${opts.sortable ? "" : 'style="cursor:default"'}>${c.label}${arrow(c.key)}</th>`).join("") + "</tr></thead><tbody>";
-    rows.forEach(r => { h += "<tr>" + cols.map((c, k) => { const v = c.get(r); return `<td class="${best[k] !== null && v === best[k] ? "best" : ""}">${c.fmt ? c.fmt(v) : esc(v)}</td>`; }).join("") + "</tr>"; });
-    el.innerHTML = h + "</tbody></table>";
-    if (opts.sortable) el.querySelectorAll("th").forEach(th => th.onclick = () => {
-      const k = th.dataset.sort; state.sortDir = state.sortKey === k ? -state.sortDir : (k === "name" ? 1 : -1); state.sortKey = k; render();
-    });
-  }
-
-  // ---------- pages ----------
-  function monthRange() { const a = []; for (let m = state.moFrom; m <= state.moTo; m++) a.push(m); return a; }
-
-  function renderOverview(idx, T) {
-    kpiCards("kpis", T.n ? [
-      ["Revenue", brl(T.val), brlFull(T.val)],
-      ["Delivered orders", fmtInt(T.n), ""],
-      ["Avg order value", "R$" + fmt2(T.val / T.n), "items + freight"],
-      ["Avg review score", fmt2(avgRev(T)), "out of 5"],
-      ["Late deliveries", pct(T.late / T.n), "after estimated date"],
-      ["Avg delivery time", fmt1(T.dd / T.n) + " days", "purchase to doorstep"],
-    ] : [["No orders", "–", ""]]);
-
-    const gm = group(i => C.mo[i], D.months.length, idx);
-    vbars(document.getElementById("c-rev"), monthRange().map(m => ({ label: monthLabel(D.months[m]), short: monthLabel(D.months[m]), value: gm[m].val,
-      tip: tipHtml(monthLabel(D.months[m]), [["Revenue", brlFull(gm[m].val)], ["Orders", fmtInt(gm[m].n)], ["AOV", gm[m].n ? "R$" + fmt2(gm[m].val / gm[m].n) : "–"]]) })),
-      { fmt: brl, axisFmt: v => compact(v), height: 260, aria: "Monthly revenue" });
-
+    // ranked categories
     const gc = group(i => C.cat[i], D.categories.length, idx);
-    const rows = gc.map((g, k) => ({ g, k })).filter(r => r.g.n).sort((a, b) => b.g.val - a.g.val).slice(0, 10)
-      .map(({ g, k }) => ({ label: prettyCat(D.categories[k]), value: g.val, tip: tipHtml(prettyCat(D.categories[k]), [["Revenue", brlFull(g.val)], ["Share", pct(g.val / T.val)], ["Orders", fmtInt(g.n)], ["Avg review", fmt2(avgRev(g))], ["Late rate", pct(g.late / g.n)]]) }));
-    hbars(document.getElementById("c-topcat"), rows, { fmt: brl, labelW: 170, aria: "Top categories by revenue" });
+    const rows = gc.map((g, k) => ({ g, k })).filter(r => r.g.n).sort((a, b) => b.g.val - a.g.val).slice(0, 12);
+    if (!rows.length) empty(document.getElementById("rank")); else {
+      const mx = rows[0].g.val;
+      document.getElementById("rank").innerHTML = `<table class="rank"><tbody>` + rows.map((r, n) =>
+        `<tr data-tip="${esc(tipHtml(cat(D.categories[r.k]), [["Revenue", "R$" + int(r.g.val)], ["Orders", int(r.g.n)], ["Avg order", "R$" + f2.format(r.g.val / r.g.n)], ["Avg review", f2.format(avgR(r.g)) + "★"], ["Late rate", pct(r.g.late / r.g.n)]]))}">` +
+        `<td class="n">${n + 1}</td><td class="name">${esc(cat(D.categories[r.k]))}</td><td class="barcell"><div class="bar" style="width:${(r.g.val / mx * 100).toFixed(1)}%;opacity:${(1 - n * 0.05).toFixed(2)}"></div></td>` +
+        `<td class="num">${brl(r.g.val)}</td><td class="share">${pct(r.g.val / T.val)}</td></tr>`).join("") + `</tbody></table>`;
+    }
 
-    const ul = document.getElementById("takeaways");
-    if (T.n < 200) { ul.innerHTML = "<li>Too few orders in this selection for reliable comparisons.</li>"; return; }
-    const late = blank(), ontime = blank();
-    for (const i of idx) add(C.late[i] ? late : ontime, i);
-    const items = [];
-    if (late.rn >= 20) items.push(`Late orders average <b>${fmt2(avgRev(late))}★</b> vs <b>${fmt2(avgRev(ontime))}★</b> on time. They are ${pct(late.n / T.n)} of orders but <b>${pct(late.bad / (late.bad + ontime.bad), 0)}</b> of 1–2★ reviews.`);
-    const gr = group(i => stateRegionIdx[C.st[i]], D.regions.length, idx).map((g, k) => ({ g, k })).filter(r => r.g.n >= 100);
-    if (gr.length > 1) { gr.sort((a, b) => b.g.dd / b.g.n - a.g.dd / a.g.n); const s = gr[0], f = gr[gr.length - 1];
-      items.push(`<b>${D.regions[s.k]}</b> waits ${fmt1(s.g.dd / s.g.n)} days on average vs ${fmt1(f.g.dd / f.g.n)} in the ${D.regions[f.k]}.`); }
-    const r = retentionStats(idx);
-    items.push(`Only <b>${pct(r.trueReturn / r.customers)}</b> of customers came back on a later day. Growth here is almost all new customers.`);
-    if (rows.length) items.push(`<b>${esc(rows[0].label)}</b> is the top category (${pct(rows[0].value / T.val)} of revenue).`);
-    ul.innerHTML = items.map(t => `<li>${t}</li>`).join("");
+    // instalments dot plot (mean vs median)
+    const BANDS = [["Paid in full", v => v <= 1], ["2–3", v => v <= 3], ["4–6", v => v <= 6], ["7–10", v => v <= 10], ["11+", () => true]];
+    const bandOf = v => { for (let k = 0; k < BANDS.length; k++) if (BANDS[k][1](v)) return k; return 4; };
+    const vals = BANDS.map(() => []); for (const i of idx) vals[bandOf(C.ins[i])].push(C.val[i] / 100);
+    const stats = vals.map(a => { if (!a.length) return null; a.sort((p, q) => p - q); return { n: a.length, mean: a.reduce((s, v) => s + v, 0) / a.length, med: a[Math.floor(a.length / 2)] }; });
+    const el2 = document.getElementById("c-ins");
+    if (!T.n) empty(el2); else {
+      const W = el2.clientWidth || 400, rowH = 46, pl = 92, pr = 20, H = BANDS.length * rowH + 26;
+      const max = niceMax(Math.max(...stats.filter(Boolean).map(s => s.mean)) * 1.1), x = v => pl + v / max * (W - pl - pr), nt = ticks(max);
+      let b = "";
+      for (let t = 0; t <= nt; t++) { const v = max * t / nt; b += `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="0" y2="${H - 22}"/><text x="${x(v)}" y="${H - 6}" text-anchor="middle" class="t-num">R$${int(v)}</text>`; }
+      stats.forEach((s, k) => {
+        const cy = k * rowH + rowH / 2;
+        b += `<text x="0" y="${cy + 4}" class="t-ink" style="font-size:13.5px">${BANDS[k][0]}</text>`;
+        if (!s) return;
+        b += `<g data-tip="${esc(tipHtml(BANDS[k][0] + (k ? " instalments" : ""), [["Average order", "R$" + f2.format(s.mean)], ["Median order", "R$" + f2.format(s.med)], ["Orders", int(s.n)]]))}">` +
+             `<rect x="0" y="${cy - rowH / 2}" width="${W}" height="${rowH}" fill="transparent"/>` +
+             `<line x1="${x(s.med)}" x2="${x(s.mean)}" y1="${cy}" y2="${cy}" stroke="${COL.rule}" stroke-width="4" stroke-linecap="round"/>` +
+             `<circle cx="${x(s.med)}" cy="${cy}" r="6" fill="${COL.sheet}" stroke="${COL.ink2}" stroke-width="2"/>` +
+             `<circle cx="${x(s.mean)}" cy="${cy}" r="7" fill="${COL.ink}"/>` +
+             `<text x="${x(s.mean) + 12}" y="${cy + 4}" class="t-ink t-num" style="font-weight:600">R$${int(s.mean)}</text></g>`;
+      });
+      el2.innerHTML = svg(W, H, "Order value by instalments", b) +
+        `<div class="legend"><span><i style="background:${COL.ink};border-radius:50%"></i>Average</span><span><i style="background:${COL.sheet};border:2px solid ${COL.ink2};border-radius:50%"></i>Median</span></div>`;
+    }
+    const gp = group(i => C.pt[i], D.payTypes.length, idx);
+    const cc = D.payTypes.indexOf("credit_card"), bo = D.payTypes.indexOf("boleto");
+    document.getElementById("pay-note").textContent = T.n ? `Credit cards carry ${pct(gp[cc].n / T.n, 0)} of orders and boleto (bank slip) ${pct(gp[bo].n / T.n, 0)}. Instalments are only available on cards, so they are the lever for basket size.` : "";
   }
 
-  const BUCKETS = [["15+ days\nearly", d => d <= -15], ["8–14\nearly", d => d <= -8], ["1–7\nearly", d => d <= -1], ["on the\nday", d => d === 0],
-                   ["1–3\nlate", d => d <= 3], ["4–7\nlate", d => d <= 7], ["8–14\nlate", d => d <= 14], ["15+\nlate", () => true]];
-  function bucketOf(d) { for (let k = 0; k < BUCKETS.length; k++) if (BUCKETS[k][1](d)) return k; return 7; }
+  // =====================================================================
+  // DELIVERY
+  // =====================================================================
+  // Tile grid of Brazil: [col, row]
+  const TILES = { RR: [2, 0], AP: [4, 0], AM: [1, 1], PA: [3, 1], MA: [5, 1], CE: [6, 1], RN: [7, 1], AC: [0, 2], RO: [1, 2], MT: [2, 2], TO: [4, 2], PI: [5, 2], PB: [7, 2],
+                  GO: [3, 3], DF: [4, 3], BA: [5, 3], PE: [6, 3], AL: [7, 3], MS: [2, 4], MG: [4, 4], ES: [5, 4], SE: [6, 4], SP: [3, 5], RJ: [4, 5], PR: [3, 6], SC: [3, 7], RS: [3, 8] };
 
   function renderDelivery(idx, T) {
-    const late = blank(), ontime = blank();
-    for (const i of idx) add(C.late[i] ? late : ontime, i);
-    kpiCards("kpis-del", T.n ? [
-      ["Late delivery rate", pct(T.late / T.n), fmtInt(late.n) + " orders"],
-      ["Avg review: on time", fmt2(avgRev(ontime)) + "★", pct(ontime.rn ? ontime.bad / ontime.rn : 0) + " are 1–2★"],
-      ["Avg review: late", late.rn ? fmt2(avgRev(late)) + "★" : "–", late.rn ? pct(late.bad / late.rn) + " are 1–2★" : ""],
-      ["Late share of bad reviews", (late.bad + ontime.bad) ? pct(late.bad / (late.bad + ontime.bad), 0) : "–", "of all 1–2★ reviews"],
-    ] : [["No orders", "–", ""]]);
-
-    const gb = group(i => bucketOf(C.dl[i]), BUCKETS.length, idx);
-    vbars(document.getElementById("c-bucket"), gb.map((g, k) => ({ label: BUCKETS[k][0].replace("\n", " "), short: BUCKETS[k][0], value: avgRev(g) || 0,
-      color: k >= 4 ? css("--bad") : css("--s1"),
-      tip: tipHtml(BUCKETS[k][0].replace("\n", " "), [["Avg review", g.rn ? fmt2(avgRev(g)) : "–"], ["1–2★ share", g.rn ? pct(g.bad / g.rn) : "–"], ["Orders", fmtInt(g.n)]]) })),
-      { fmt: fmt2, max: 5, axisFmt: v => v.toFixed(1), showValues: true, height: 270, padB: 38, labelEvery: 1, aria: "Review score by delivery timing" });
-
-    const gm = group(i => C.mo[i], D.months.length, idx);
-    line(document.getElementById("c-latem"), monthRange().map(m => ({ short: monthLabel(D.months[m]), value: gm[m].n ? gm[m].late / gm[m].n : NaN,
-      tip: tipHtml(monthLabel(D.months[m]), [["Late rate", gm[m].n ? pct(gm[m].late / gm[m].n) : "–"], ["Orders", fmtInt(gm[m].n)], ["Avg delivery", gm[m].n ? fmt1(gm[m].dd / gm[m].n) + " days" : "–"]]) })),
-      { axisFmt: v => (v * 100).toFixed(0) + "%", fmt: v => pct(v, 0), color: css("--bad"), markMax: true, height: 270, aria: "Late rate by month" });
-
-    const gs = group(i => C.st[i], D.states.length, idx);
-    const srows = gs.map((g, k) => ({ g, k })).filter(r => r.g.n >= 20).sort((a, b) => b.g.dd / b.g.n - a.g.dd / a.g.n)
-      .map(({ g, k }) => ({ label: D.states[k] + " · " + D.stateRegion[k], value: g.dd / g.n,
-        tip: tipHtml(D.states[k] + " (" + D.stateRegion[k] + ")", [["Avg delivery", fmt1(g.dd / g.n) + " days"], ["Late rate", pct(g.late / g.n)], ["Avg review", fmt2(avgRev(g))], ["Orders", fmtInt(g.n)]]) }));
-    hbars(document.getElementById("c-state"), srows, { fmt: v => fmt1(v) + "d", labelW: 120, rowH: 22, aria: "Delivery days by state" });
-
-    const gr = group(i => stateRegionIdx[C.st[i]], D.regions.length, idx).map((g, k) => ({ name: D.regions[k], g })).filter(r => r.g.n);
-    gr.sort((a, b) => b.g.dd / b.g.n - a.g.dd / a.g.n);
-    table(document.getElementById("t-region"), [
-      { key: "name", label: "Region", get: r => r.name },
-      { key: "n", label: "Orders", get: r => r.g.n, fmt: fmtInt },
-      { key: "dd", label: "Avg days", get: r => r.g.dd / r.g.n, fmt: fmt1 },
-      { key: "late", label: "Late rate", get: r => r.g.late / r.g.n, fmt: v => pct(v) },
-      { key: "rev", label: "Avg review", get: r => avgRev(r.g), fmt: fmt2 },
-    ], gr);
-    let early = 0, dsum = 0; for (const i of idx) { if (C.dl[i] < 0) early++; dsum += C.dl[i]; }
-    document.getElementById("est-note").textContent = T.n ? `Delivery estimates are padded: ${pct(early / T.n, 0)} of orders arrive early, on average ${fmt1(-dsum / T.n)} days before the promised date.` : "";
-  }
-
-  function retentionStats(idx) {
-    const custs = new Set(), repeat = new Set(); let sameDay = 0, trueReturn = 0, repVal = 0, totVal = 0;
-    for (const i of idx) { custs.add(C.cu[i]); if (C.on[i] === 2) { repeat.add(C.cu[i]); if (C.gap[i] === 0) sameDay++; else trueReturn++; } }
-    for (const i of idx) { totVal += C.val[i]; if (C.on[i] > 1 || repeat.has(C.cu[i])) repVal += C.val[i]; }
-    return { customers: custs.size || 1, repeat: sameDay + trueReturn, sameDay, trueReturn, repShare: totVal ? repVal / totVal : 0 };
-  }
-
-  function renderRetention(idx, T) {
-    const r = retentionStats(idx);
-    kpiCards("kpis-ret", T.n ? [
-      ["Customers", fmtInt(r.customers), "unique people (customer_unique_id)"],
-      ["Placed a 2nd order", pct(r.repeat / r.customers, 2), fmtInt(r.repeat) + " customers"],
-      ["Came back on a later day", pct(r.trueReturn / r.customers, 2), fmtInt(r.sameDay) + " 2nd orders were same-day"],
-      ["Revenue from repeat customers", pct(r.repShare), "all orders by customers with 2+ orders"],
-    ] : [["No orders", "–", ""]]);
-
-    // cohort heatmap
-    const el = document.getElementById("c-cohort");
-    const M = D.months.length, maxK = 12;
-    const sets = Array.from({ length: M }, () => Array.from({ length: maxK + 1 }, () => new Set()));
-    for (const i of idx) { const k = C.mo[i] - C.fm[i]; if (k <= maxK) sets[C.fm[i]][k].add(C.cu[i]); }
-    const cohorts = [];
-    for (let m = state.moFrom; m <= state.moTo; m++) if (sets[m][0].size >= 50) cohorts.push(m);
-    if (!cohorts.length) empty(el, "Not enough customers per cohort for this selection (need 50+ first-time buyers in a month).");
-    else {
-      const W = el.clientWidth || 900, labelW = 120, top = 4, cw = (W - labelW - 10) / maxK, ch = 22, H = top + ch * cohorts.length + 54;
-      let vmax = 0; cohorts.forEach(m => { for (let k = 1; k <= maxK; k++) if (m + k <= state.moTo) vmax = Math.max(vmax, sets[m][k].size / sets[m][0].size); });
-      vmax = vmax || 0.01;
-      const color = v => SEQ[Math.min(SEQ.length - 1, Math.round(v / vmax * (SEQ.length - 1)))];
-      let s = svgOpen(W, H, "Cohort retention heatmap");
-      cohorts.forEach((m, r) => {
-        const size = sets[m][0].size;
-        s += `<text class="lbl" x="${labelW - 8}" y="${top + r * ch + ch / 2 + 4}" text-anchor="end">${monthLabel(D.months[m])} (${fmtInt(size)})</text>`;
-        for (let k = 1; k <= maxK; k++) {
-          if (m + k > state.moTo) continue;
-          const v = sets[m][k].size / size;
-          s += `<rect class="cell" x="${labelW + (k - 1) * cw + 1}" y="${top + r * ch + 1}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${color(v)}" data-tip="${esc(tipHtml(monthLabel(D.months[m]) + " cohort, month " + k, [["Ordered again", fmtInt(sets[m][k].size) + " of " + fmtInt(size)], ["Retention", pct(v, 2)]]))}"/>`;
-        }
+    // ----- tile map (ignores the state filter so you can see context; highlights the selected state)
+    const el = document.getElementById("c-map");
+    const s = state, all = [];
+    for (let i = 0; i < N; i++) {   // same filters except state
+      if (s.rg >= 0 && regionOf[C.st[i]] !== s.rg) continue;
+      if (s.cat >= 0 && C.cat[i] !== s.cat) continue;
+      if (s.pt >= 0 && C.pt[i] !== s.pt) continue;
+      if (C.mo[i] < s.moFrom || C.mo[i] > s.moTo) continue;
+      all.push(i);
+    }
+    const gs = group(i => C.st[i], D.states.length, all);
+    const valid = gs.map((g, k) => ({ g, k })).filter(r => r.g.n >= 20);
+    if (!valid.length) empty(el); else {
+      const W = el.clientWidth || 600, cols = 8, rowsN = 9, cell = Math.min((W - 170) / cols, 62), gap = 4, H = rowsN * cell + 10;
+      const days = valid.map(r => r.g.dd / r.g.n), lo = Math.min(...days), hi = Math.max(...days);
+      const shade = v => SEQ[Math.max(0, Math.min(SEQ.length - 1, Math.round((v - lo) / (hi - lo || 1) * (SEQ.length - 1))))];
+      const ox = 0;
+      let b = "";
+      D.states.forEach((st, k) => {
+        const pos = TILES[st]; if (!pos) return;
+        const g = gs[k], x = ox + pos[0] * cell, y = pos[1] * cell, ok = g.n >= 20, v = ok ? g.dd / g.n : 0;
+        const fill = ok ? shade(v) : COL.sheet, dark = ok && SEQ.indexOf(fill) >= 5, sel = state.st === k;
+        const t = g.n ? tipHtml(`${st} · ${D.stateRegion[k]}`, [["Avg delivery", f1.format(g.dd / g.n) + " days"], ["Late rate", pct(g.late / g.n)], ["Avg review", g.rn ? f2.format(avgR(g)) + "★" : "–"], ["Orders", int(g.n)], ["", sel ? "Click to clear" : "Click to filter"]]) : tipHtml(st, [["Orders", "0"]]);
+        b += `<g class="tile" data-state="${k}" data-tip="${esc(t)}" style="cursor:pointer">` +
+             `<rect x="${x + gap / 2}" y="${y + gap / 2}" width="${cell - gap}" height="${cell - gap}" rx="6" fill="${fill}" stroke="${sel ? COL.kraft : ok ? "none" : COL.rule}" stroke-width="${sel ? 3 : 1.5}"/>` +
+             `<text x="${x + cell / 2}" y="${y + cell / 2 - 2}" text-anchor="middle" style="font-weight:600;font-size:13px;fill:${dark ? "#fff" : COL.ink}">${st}</text>` +
+             (ok ? `<text x="${x + cell / 2}" y="${y + cell / 2 + 13}" text-anchor="middle" class="t-num" style="font-size:11px;fill:${dark ? "#dfe5ee" : COL.ink2}">${f1.format(v)}d</text>` : "") + `</g>`;
       });
-      for (let k = 1; k <= maxK; k++) s += `<text x="${labelW + (k - 0.5) * cw}" y="${top + ch * cohorts.length + 14}" text-anchor="middle">M${k}</text>`;
-      const ly = top + ch * cohorts.length + 28, lw = Math.min(240, W - labelW - 160);
-      s += `<defs><linearGradient id="seqgrad">${SEQ.map((c, k) => `<stop offset="${k / (SEQ.length - 1)}" stop-color="${c}"/>`).join("")}</linearGradient></defs>`;
-      s += `<text x="${labelW}" y="${ly + 10}">0%</text><rect x="${labelW + 26}" y="${ly + 1}" width="${lw}" height="10" rx="3" fill="url(#seqgrad)"/><text x="${labelW + 34 + lw}" y="${ly + 10}">${pct(vmax, 2)} of cohort ordering again that month · row label = month (cohort size)</text>`;
-      el.innerHTML = s + "</svg>";
+      // legend + callouts on the right
+      const lx = cols * cell + 24, lw = 14;
+      b += `<text x="${lx}" y="14" class="t-ink2" style="font-size:12.5px">Avg days</text>`;
+      SEQ.forEach((c, k) => b += `<rect x="${lx}" y="${24 + k * 16}" width="${lw}" height="15" fill="${c}"/>`);
+      b += `<text x="${lx + lw + 8}" y="${36}" class="t-num">${f1.format(lo)}</text><text x="${lx + lw + 8}" y="${24 + SEQ.length * 16 - 4}" class="t-num">${f1.format(hi)}</text>`;
+      const sorted = valid.slice().sort((a, c) => a.g.dd / a.g.n - c.g.dd / c.g.n), fast = sorted[0], slow = sorted[sorted.length - 1];
+      const cy = 24 + SEQ.length * 16 + 34;
+      b += `<text x="${lx}" y="${cy}" class="t-ink2" style="font-size:12.5px">Fastest</text><text x="${lx}" y="${cy + 22}" class="t-serif t-ink" style="font-size:20px;font-weight:700">${D.states[fast.k]} ${f1.format(fast.g.dd / fast.g.n)}d</text>`;
+      b += `<text x="${lx}" y="${cy + 54}" class="t-ink2" style="font-size:12.5px">Slowest</text><text x="${lx}" y="${cy + 76}" class="t-serif t-ink" style="font-size:20px;font-weight:700">${D.states[slow.k]} ${f1.format(slow.g.dd / slow.g.n)}d</text>`;
+      b += `<text x="${lx}" y="${cy + 100}" style="font-size:12px">${f1.format((slow.g.dd / slow.g.n) / (fast.g.dd / fast.g.n))}× longer</text>`;
+      el.innerHTML = svg(W, H, "Tile map of Brazil: average delivery days by state", b);
+      el.querySelectorAll(".tile").forEach(t => t.addEventListener("click", () => {
+        const k = +t.dataset.state; state.st = state.st === k ? -1 : k;
+        if (state.st >= 0 && state.rg >= 0 && regionOf[k] !== state.rg) state.rg = -1;
+        fillStates(); sync(); render();
+      }));
     }
 
-    // gap to second order
-    const GAPS = [["Same day", g => g === 0], ["1–30 days", g => g <= 30], ["31–90", g => g <= 90], ["91–180", g => g <= 180], ["180+", () => true]];
-    const gc = new Array(GAPS.length).fill(0);
-    for (const i of idx) if (C.on[i] === 2) { for (let k = 0; k < GAPS.length; k++) if (GAPS[k][1](C.gap[i])) { gc[k]++; break; } }
-    const gsum = gc.reduce((a, b) => a + b, 0);
-    vbars(document.getElementById("c-gap"), gc.map((c, k) => ({ label: GAPS[k][0], value: c, color: k === 0 ? css("--muted") : css("--s1"),
-      tip: tipHtml(GAPS[k][0], [["Customers", fmtInt(c)], ["Share", gsum ? pct(c / gsum) : "–"]]) })),
-      { fmt: fmtInt, showValues: true, height: 230, labelEvery: 1, aria: "Days to second order" });
-    document.getElementById("gap-note").textContent = gsum ? `${pct(gc[0] / gsum, 0)} of "second orders" were placed the same day as the first: a split basket, not a return visit.` : "";
+    // ----- diverging histogram of delay days
+    const el2 = document.getElementById("c-delay");
+    if (!T.n) empty(el2); else {
+      const MIN = -40, MAX = 30, nb = MAX - MIN + 1, counts = new Array(nb).fill(0);
+      let early = 0, dsum = 0;
+      for (const i of idx) { const d = Math.max(MIN, Math.min(MAX, C.dl[i])); counts[d - MIN]++; if (C.dl[i] < 0) early++; dsum += C.dl[i]; }
+      const W = el2.clientWidth || 420, H = 220, pb = 30, pt = 10, pw = W, ph = H - pb - pt, bw = pw / nb;
+      const max = Math.max(...counts), y = v => pt + ph - v / max * ph;
+      let b = "";
+      counts.forEach((c, k) => {
+        const d = k + MIN, x = k * bw, h = ph * c / max, color = d > 0 ? COL.late : d === 0 ? COL.ink2 : COL.route;
+        const lab = d === MIN ? `${-MIN}+ days early` : d === MAX ? `${MAX}+ days late` : d < 0 ? `${-d} day${d === -1 ? "" : "s"} early` : d === 0 ? "On the promised day" : `${d} day${d === 1 ? "" : "s"} late`;
+        b += `<g data-tip="${esc(tipHtml(lab, [["Orders", int(c)], ["Share", pct(c / T.n)]]))}"><rect x="${x}" y="${pt}" width="${bw}" height="${ph}" fill="transparent"/>` +
+             `<rect x="${x + 0.5}" y="${y(c)}" width="${Math.max(1, bw - 1)}" height="${h}" fill="${color}" opacity="${d > 0 ? 1 : 0.85}"/></g>`;
+      });
+      const zx = (0 - MIN) * bw + bw / 2;
+      b += `<line x1="${zx}" x2="${zx}" y1="${pt - 4}" y2="${pt + ph}" stroke="${COL.ink}" stroke-width="1.5"/>`;
+      b += `<text x="${zx}" y="${H - 8}" text-anchor="middle" class="t-ink" style="font-weight:600">Promised date</text>`;
+      b += `<text x="0" y="${H - 8}">${-MIN}+ days early</text><text x="${W}" y="${H - 8}" text-anchor="end">${MAX}+ late</text>`;
+      b += `<line class="base" x1="0" x2="${W}" y1="${pt + ph}" y2="${pt + ph}"/>`;
+      el2.innerHTML = svg(W, H, "Distribution of delivery versus estimate", b) +
+        `<div class="legend"><span><i style="background:${COL.route}"></i>Early ${pct(early / T.n, 0)}</span><span><i style="background:${COL.late}"></i>Late ${pct(T.late / T.n)}</span></div>`;
+      document.getElementById("delay-note").textContent = `The typical order lands ${f1.format(-dsum / T.n)} days before its estimate. Estimates this cautious keep the late rate low, but they also quote customers a longer wait than they need at checkout.`;
+    }
 
-    // RFM table
-    const segs = D.segments.map(() => ({ c: new Set(), val: 0 }));
-    let tv = 0, tc = new Set();
-    for (const i of idx) { const s = segs[C.seg[i]]; s.c.add(C.cu[i]); s.val += C.val[i] / 100; tv += C.val[i] / 100; tc.add(C.cu[i]); }
-    const ACTIONS = { "Loyal repeat": "Reward and retain", "Lapsed repeat": "Win-back offer", "New high-value": "Nurture to 2nd order", "New low-value": "Cross-sell",
-                      "Cooling": "Light reminder", "At-risk high-value": "Win-back; check delivery issues", "Hibernating": "Low priority" };
-    const rows = D.segments.map((name, k) => ({ name, n: segs[k].c.size, val: segs[k].val })).filter(r => r.n).sort((a, b) => b.val - a.val);
-    table(document.getElementById("t-rfm"), [
-      { key: "name", label: "Segment", get: r => r.name },
-      { key: "n", label: "Customers", get: r => r.n, fmt: fmtInt },
-      { key: "pc", label: "% customers", get: r => r.n / tc.size, fmt: v => pct(v) },
-      { key: "pv", label: "% revenue", get: r => r.val / tv, fmt: v => pct(v), best: "max" },
-      { key: "spend", label: "Spend / customer", get: r => r.val / r.n, fmt: v => "R$" + fmtInt(v), best: "max" },
-      { key: "act", label: "Action", get: r => ACTIONS[r.name] },
-    ], rows);
+    // ----- late rate line + volume bars
+    const el3 = document.getElementById("c-late");
+    const gm = group(i => C.mo[i], D.months.length, idx), ms = months();
+    if (!T.n) empty(el3); else {
+      const W = el3.clientWidth || 900, H = 260, pl = 44, pr = 12, pt = 26, pb = 28, pw = W - pl - pr, ph = H - pt - pb;
+      const bw = pw / ms.length, x = k => pl + k * bw + bw / 2;
+      const rates = ms.map(m => gm[m].n ? gm[m].late / gm[m].n : NaN), rmax = Math.max(0.05, Math.ceil(Math.max(...rates.filter(isFinite)) * 1.15 * 20) / 20);
+      const vmax = niceMax(Math.max(...ms.map(m => gm[m].n)));
+      const y = v => pt + ph - v / rmax * ph, yv = v => pt + ph - v / vmax * ph * 0.45;
+      let b = "", nt = ticks(rmax);
+      for (let t = 0; t <= nt; t++) { const v = rmax * t / nt; b += `<line class="grid" x1="${pl}" x2="${W - pr}" y1="${y(v)}" y2="${y(v)}"/><text x="${pl - 8}" y="${y(v) + 4}" text-anchor="end" class="t-num">${(v * 100).toFixed(0)}%</text>`; }
+      ms.forEach((m, k) => {
+        const g = gm[m];
+        b += `<rect x="${x(k) - bw * 0.32}" y="${yv(g.n)}" width="${bw * 0.64}" height="${pt + ph - yv(g.n)}" fill="${COL.ink}" opacity="0.09" rx="2"/>`;
+      });
+      let d = ""; rates.forEach((r, k) => { if (isFinite(r)) d += (d ? "L" : "M") + x(k) + "," + y(r); });
+      b += `<path d="${d}" fill="none" stroke="${COL.late}" stroke-width="2.25" stroke-linejoin="round"/>`;
+      // label the top two peaks
+      const order = rates.map((r, k) => ({ r, k })).filter(o => isFinite(o.r)).sort((a, c) => c.r - a.r);
+      const peaks = []; for (const o of order) { if (peaks.every(p => Math.abs(p.k - o.k) > 2)) peaks.push(o); if (peaks.length === 2) break; }
+      peaks.forEach(p => { b += `<circle cx="${x(p.k)}" cy="${y(p.r)}" r="4.5" fill="${COL.late}" stroke="${COL.sheet}" stroke-width="2"/><text x="${x(p.k)}" y="${y(p.r) - 11}" text-anchor="middle" style="font-weight:600;font-size:12.5px;fill:${COL.late}">${pct(p.r, 0)} in ${mon(D.months[ms[p.k]])}</text>`; });
+      const every = Math.ceil(ms.length / Math.max(1, Math.floor(pw / 60)));
+      ms.forEach((m, k) => {
+        const g = gm[m];
+        if (k % every === 0) b += `<text x="${x(k)}" y="${H - 6}" text-anchor="middle">${mon(D.months[m])}</text>`;
+        b += `<g class="hov" data-tip="${esc(tipHtml(monLong(D.months[m]), [["Late rate", g.n ? pct(g.late / g.n) : "–"], ["Orders", int(g.n)], ["Avg delivery", g.n ? f1.format(g.dd / g.n) + " days" : "–"]]))}">` +
+             `<rect class="bgband" x="${x(k) - bw / 2}" y="${pt}" width="${bw}" height="${ph}" fill="transparent"/>` +
+             (g.n ? `<circle class="hl" cx="${x(k)}" cy="${y(g.late / g.n)}" r="4.5" fill="${COL.late}" stroke="${COL.sheet}" stroke-width="2"/>` : "") + `</g>`;
+      });
+      b += `<line class="base" x1="${pl}" x2="${W - pr}" y1="${pt + ph}" y2="${pt + ph}"/>`;
+      el3.innerHTML = svg(W, H, "Late rate by month with order volume", b) +
+        `<div class="legend"><span><i style="background:${COL.late};height:3px;border-radius:2px"></i>Late rate</span><span><i style="background:${COL.ink};opacity:.15"></i>Orders placed</span></div>`;
+    }
   }
 
-  function renderCategories(idx, T) {
-    const gp = group(i => C.pt[i], D.payTypes.length, idx);
-    const PC = ["--s1", "--s2", "--s3", "--s4", "--muted"];
-    stackbar(document.getElementById("c-pay"), D.payTypes.map((p, k) => ({ label: prettyCat(p), value: gp[k].n, color: css(PC[Math.min(k, PC.length - 1)]) })).filter(p => p.value));
-    hbars(document.getElementById("c-pay-aov"), D.payTypes.map((p, k) => ({ k, g: gp[k] })).filter(r => r.g.n >= 20).map(({ k, g }) => ({
-      label: prettyCat(D.payTypes[k]), value: g.val / g.n, color: css(PC[Math.min(k, PC.length - 1)]),
-      tip: tipHtml(prettyCat(D.payTypes[k]), [["Avg order value", "R$" + fmt2(g.val / g.n)], ["Orders", fmtInt(g.n)]]) })), { fmt: v => "R$" + fmtInt(v), labelW: 90, aria: "AOV by payment method" });
+  // =====================================================================
+  // REVIEW
+  // =====================================================================
+  const BUCKETS = [["15+ days early", d => d <= -15], ["8–14 days early", d => d <= -8], ["1–7 days early", d => d <= -1], ["On the promised day", d => d === 0],
+                   ["1–3 days late", d => d <= 3], ["4–7 days late", d => d <= 7], ["8–14 days late", d => d <= 14], ["15+ days late", () => true]];
+  const bucketOf = d => { for (let k = 0; k < BUCKETS.length; k++) if (BUCKETS[k][1](d)) return k; return 7; };
 
-    const BANDS = [["Paid in full", v => v <= 1], ["2–3", v => v <= 3], ["4–6", v => v <= 6], ["7–10", v => v <= 10], ["11+", () => true]];
-    const gi = group(i => { for (let k = 0; k < BANDS.length; k++) if (BANDS[k][1](C.ins[i])) return k; return 4; }, BANDS.length, idx);
-    vbars(document.getElementById("c-ins"), gi.map((g, k) => ({ label: BANDS[k][0], value: g.n ? g.val / g.n : 0,
-      tip: tipHtml(BANDS[k][0] + " instalments", [["Avg order value", g.n ? "R$" + fmt2(g.val / g.n) : "–"], ["Orders", fmtInt(g.n)], ["Avg review", fmt2(avgRev(g))]]) })),
-      { fmt: v => "R$" + fmtInt(v), axisFmt: v => "R$" + fmtInt(v), showValues: true, height: 250, labelEvery: 1, aria: "AOV by instalments" });
+  function renderReview(idx, T) {
+    // ----- 100% stacked star rows
+    const el = document.getElementById("c-stars");
+    const gb = group(i => bucketOf(C.dl[i]), BUCKETS.length, idx);
+    if (!T.rn) empty(el); else {
+      const W = el.clientWidth || 700, rowH = 38, pl = W < 520 ? 112 : 150, pr = 64, H = BUCKETS.length * rowH + 14, bw = W - pl - pr, bh = 22;
+      let b = "";
+      gb.forEach((g, k) => {
+        const yy = k * rowH + (k >= 4 ? 14 : 0), late = k >= 4;
+        b += `<text x="${pl - 12}" y="${yy + rowH / 2 + 4}" text-anchor="end" style="font-size:13px;fill:${late ? COL.late : COL.ink}">${BUCKETS[k][0]}</text>`;
+        if (!g.rn) { b += `<text x="${pl}" y="${yy + rowH / 2 + 4}">no reviews</text>`; return; }
+        let x = pl;
+        for (let s = 0; s < 5; s++) {
+          const w = g.stars[s] / g.rn * bw; if (w <= 0) continue;
+          b += `<rect x="${x}" y="${yy + (rowH - bh) / 2}" width="${Math.max(0, w - 1.5)}" height="${bh}" fill="${STAR[s]}" data-tip="${esc(tipHtml(BUCKETS[k][0], [[(s + 1) + "★ reviews", pct(g.stars[s] / g.rn)], ["Count", int(g.stars[s])], ["Orders reviewed", int(g.rn)]]))}"/>`;
+          if (w > 34) b += `<text x="${x + w / 2}" y="${yy + rowH / 2 + 4}" text-anchor="middle" style="font-size:11px;font-weight:500;fill:${s === 2 ? COL.ink : "#fff"};pointer-events:none">${pct(g.stars[s] / g.rn, 0)}</text>`;
+          x += w;
+        }
+        b += `<text x="${W - pr + 10}" y="${yy + rowH / 2 + 5}" class="t-serif t-num" style="font-size:14px;font-weight:700;fill:${late ? COL.late : COL.ink}">${f2.format(avgR(g))}★</text>`;
+      });
+      b += `<line x1="${pl - 140}" x2="${W}" y1="${4 * rowH + 7}" y2="${4 * rowH + 7}" stroke="${COL.late}" stroke-dasharray="3 4" stroke-width="1"/>`;
+      b += `<text x="${W}" y="${4 * rowH + 3}" text-anchor="end" style="fill:${COL.late};font-size:11.5px">promised date passed</text>`;
+      b += `<text x="${W - pr + 10}" y="-6" style="font-size:11.5px">Average</text>`;
+      el.innerHTML = svg(W, H, "Star rating mix by delivery timing", b);
+      document.getElementById("stars-legend").innerHTML = STAR.map((c, s) => `<span><i style="background:${c}"></i>${s + 1}★</span>`).join("");
+    }
 
+    // ----- waffle of bad reviews
+    const { L, O } = splitLate(idx), bad = L.bad + O.bad;
+    const el2 = document.getElementById("c-waffle");
+    if (bad < 20) { empty(el2, "Too few 1–2★ reviews in this selection."); document.getElementById("waffle-note").textContent = ""; }
+    else {
+      const share = L.bad / bad, red = Math.round(share * 100), W = Math.min(el2.clientWidth || 300, 340), cell = W / 10, H = cell * 10;
+      let b = "";
+      for (let k = 0; k < 100; k++) {
+        const c = k % 10, r = Math.floor(k / 10), isLate = k < red;
+        b += `<rect x="${c * cell + 1.5}" y="${r * cell + 1.5}" width="${cell - 3}" height="${cell - 3}" rx="4" fill="${isLate ? COL.late : COL.rule}" data-tip="${esc(tipHtml(isLate ? "Late delivery" : "On time or early", [["1–2★ reviews", int(isLate ? L.bad : O.bad)], ["Share of all bad reviews", pct(isLate ? share : 1 - share)]]))}"/>`;
+      }
+      el2.innerHTML = svg(W, H, `${red} of every 100 bad reviews follow a late delivery`, b) +
+        `<div class="legend"><span><i style="background:${COL.late}"></i>After a late delivery</span><span><i style="background:${COL.rule}"></i>On time or early</span></div>`;
+      const expected = L.rn * (O.rn ? O.bad / O.rn : 0);
+      document.getElementById("waffle-note").textContent =
+        `${red} in every 100 bad reviews follow a late delivery, though late orders are only ${pct(L.n / T.n)} of the total. Delivered on time, they would have produced about ${int(Math.max(0, L.bad - expected))} fewer bad reviews (${pct(Math.max(0, L.bad - expected) / bad, 0)} of the total).`;
+    }
+
+    // ----- lowest rated categories: dot + late bar
+    const el3 = document.getElementById("c-catrev");
     const gc = group(i => C.cat[i], D.categories.length, idx);
-    const rows = gc.map((g, k) => ({ name: prettyCat(D.categories[k]), g })).filter(r => r.g.n >= 30);
-    const cols = [
-      { key: "name", label: "Category", get: r => r.name },
-      { key: "n", label: "Orders", get: r => r.g.n, fmt: fmtInt, best: "max" },
-      { key: "revenue", label: "Revenue", get: r => r.g.val, fmt: brlFull, best: "max" },
-      { key: "aov", label: "Avg order", get: r => r.g.val / r.g.n, fmt: v => "R$" + fmtInt(v), best: "max" },
-      { key: "dd", label: "Avg delivery days", get: r => r.g.dd / r.g.n, fmt: fmt1, best: "min" },
-      { key: "late", label: "Late rate", get: r => r.g.late / r.g.n, fmt: v => pct(v), best: "min" },
-      { key: "rev", label: "Avg review", get: r => avgRev(r.g), fmt: fmt2, best: "max" },
-    ];
-    const sc = cols.find(c => c.key === state.sortKey) || cols[2];
-    rows.sort((a, b) => sc.key === "name" ? state.sortDir * a.name.localeCompare(b.name) : state.sortDir * (sc.get(a) - sc.get(b)));
-    const shown = rows.slice(0, 20);
-    table(document.getElementById("t-cat"), cols, shown, { sortable: true });
-    if (rows.length > shown.length) document.getElementById("t-cat").insertAdjacentHTML("beforeend", `<div class="desc" style="margin-top:8px">Showing top ${shown.length} of ${rows.length} categories by the selected column.</div>`);
+    const rows = gc.map((g, k) => ({ g, k })).filter(r => r.g.rn >= 100).sort((a, b) => avgR(a.g) - avgR(b.g)).slice(0, 8);
+    if (!rows.length) empty(el3, "No category has 100+ reviewed orders in this selection."); else {
+      const W = el3.clientWidth || 900, rowH = 34, pl = 190, mid = pl + (W - pl) * 0.62, H = rows.length * rowH + 30;
+      const rx = v => pl + (v - 3) / 2 * (mid - pl - 30), lmax = niceMax(Math.max(...rows.map(r => r.g.late / r.g.n)) * 1.1), lx = v => mid + 20 + v / lmax * (W - mid - 70);
+      let b = `<text x="${rx(3)}" y="12">3.0★</text><text x="${rx(4)}" y="12" text-anchor="middle">4.0★</text><text x="${rx(5)}" y="12" text-anchor="end">5.0★</text>`;
+      b += `<text x="${mid + 20}" y="12">Late rate</text>`;
+      [3, 3.5, 4, 4.5, 5].forEach(v => b += `<line class="grid" x1="${rx(v)}" x2="${rx(v)}" y1="20" y2="${H}"/>`);
+      const overall = avgR(T);
+      b += `<line x1="${rx(overall)}" x2="${rx(overall)}" y1="20" y2="${H}" stroke="${COL.kraft}" stroke-width="1.5" stroke-dasharray="4 3"/><text x="${rx(overall) + 5}" y="${H - 2}" style="fill:${COL.kraft};font-size:11.5px">all categories ${f2.format(overall)}★</text>`;
+      rows.forEach((r, n) => {
+        const cy = 30 + n * rowH + rowH / 2 - 6, v = Math.max(3, avgR(r.g)), lr = r.g.late / r.g.n;
+        b += `<g data-tip="${esc(tipHtml(cat(D.categories[r.k]), [["Avg review", f2.format(avgR(r.g)) + "★"], ["1–2★ share", pct(r.g.bad / r.g.rn)], ["Late rate", pct(lr)], ["Avg delivery", f1.format(r.g.dd / r.g.n) + " days"], ["Orders", int(r.g.n)]]))}">` +
+             `<rect x="0" y="${cy - rowH / 2}" width="${W}" height="${rowH}" fill="transparent"/>` +
+             `<text x="${pl - 14}" y="${cy + 4}" text-anchor="end" class="t-ink" style="font-size:13.5px">${esc(cat(D.categories[r.k]))}</text>` +
+             `<line x1="${rx(3)}" x2="${rx(v)}" y1="${cy}" y2="${cy}" stroke="${COL.rule}" stroke-width="2"/>` +
+             `<circle cx="${rx(v)}" cy="${cy}" r="6.5" fill="${COL.ink}"/><text x="${rx(v) + 11}" y="${cy + 4}" class="t-ink t-num" style="font-weight:600">${f2.format(avgR(r.g))}</text>` +
+             `<rect x="${mid + 20}" y="${cy - 5}" width="${Math.max(1, lx(lr) - mid - 20)}" height="10" rx="2" fill="${COL.late}" opacity="0.8"/>` +
+             `<text x="${lx(lr) + 6}" y="${cy + 4}" class="t-num" style="fill:${COL.ink2}">${pct(lr)}</text></g>`;
+      });
+      el3.innerHTML = svg(W, H, "Lowest-rated categories with late rates", b);
+    }
+  }
+
+  // =====================================================================
+  // RETURN
+  // =====================================================================
+  const SEG_COL = { "Loyal repeat": "#127a5b", "Lapsed repeat": "#7fbfa7", "New high-value": "#142038", "New low-value": "#90a4c2", "Cooling": "#b98b4e", "At-risk high-value": "#cf3e2b", "Hibernating": "#c9ced6" };
+  const SEG_ACT = { "Loyal repeat": "Bought more than once and recently. Reward them and keep them close.", "Lapsed repeat": "Bought more than once, but not lately. Send a personal win-back offer.",
+    "New high-value": "Recent, big first order. Follow up after an on-time delivery to earn the second order.", "New low-value": "Recent, small first order. Cross-sell related products.",
+    "Cooling": "First order 5–9 months ago. A light reminder before they go cold.", "At-risk high-value": "Big spenders who haven't returned. Check whether their delivery was late, then win them back.",
+    "Hibernating": "Old, small first order. Reach only through low-cost channels." };
+
+  function renderReturn(idx, T) {
+    const r = retention(idx);
+    document.getElementById("statements").innerHTML = r.customers ? [
+      [pct(r.later / r.customers), `of customers came back on a later day. Another ${int(r.same)} placed a second order on the same day, which is one shopping trip split in two.`],
+      [pct(r.repShare), "of revenue comes from customers with more than one order."],
+      [int(r.customers), "unique customers in this selection. Nearly all growth comes from finding new ones."],
+    ].map(([v, t]) => `<div class="statement"><div class="v">${v}</div><p>${esc(t)}</p></div>`).join("") : "";
+
+    // ----- cohort heatmap
+    const el = document.getElementById("c-cohort"), M = D.months.length, K = 12;
+    const sets = Array.from({ length: M }, () => Array.from({ length: K + 1 }, () => new Set()));
+    for (const i of idx) { const k = C.mo[i] - C.fm[i]; if (k <= K) sets[C.fm[i]][k].add(C.cu[i]); }
+    const cohorts = []; for (let m = state.moFrom; m <= state.moTo; m++) if (sets[m][0].size >= 50) cohorts.push(m);
+    if (!cohorts.length) empty(el, "Not enough first-time buyers per month in this selection (50+ needed)."); else {
+      const W = el.clientWidth || 900, pl = 108, cw = (W - pl) / K, ch = Math.max(20, Math.min(26, cw * 0.4)), H = cohorts.length * ch + 30;
+      let vmax = 0; cohorts.forEach(m => { for (let k = 1; k <= K; k++) if (m + k <= state.moTo) vmax = Math.max(vmax, sets[m][k].size / sets[m][0].size); });
+      vmax = vmax || 0.001;
+      let b = "";
+      cohorts.forEach((m, row) => {
+        const n0 = sets[m][0].size, y = row * ch;
+        b += `<text x="${pl - 10}" y="${y + ch / 2 + 4}" text-anchor="end" class="t-ink2">${mon(D.months[m])} <tspan style="fill:${COL.muted}">(${compact(n0)})</tspan></text>`;
+        for (let k = 1; k <= K; k++) {
+          if (m + k > state.moTo) continue;
+          const v = sets[m][k].size / n0, lvl = Math.min(SEQ.length - 1, Math.round(v / vmax * (SEQ.length - 1)));
+          b += `<rect x="${pl + (k - 1) * cw + 1}" y="${y + 1}" width="${cw - 2}" height="${ch - 2}" rx="3" fill="${v === 0 ? COL.paper || "#eef1f4" : SEQ[lvl]}" data-tip="${esc(tipHtml(`${monLong(D.months[m])} cohort`, [[`Ordered again in month ${k}`, int(sets[m][k].size)], ["Cohort size", int(n0)], ["Retention", pct(v, 2)]]))}"/>`;
+        }
+      });
+      for (let k = 1; k <= K; k++) b += `<text x="${pl + (k - 0.5) * cw}" y="${H - 8}" text-anchor="middle">${k === 1 ? "1 month later" : k}</text>`;
+      el.innerHTML = svg(W, H, "Cohort retention", b) +
+        `<div class="legend"><span>Lighter → darker: 0% to ${pct(vmax, 2)} of the cohort ordering again. Even the best cell is under 1%.</span></div>`;
+    }
+
+    // ----- customers -> revenue flow by segment
+    const el2 = document.getElementById("c-rfm");
+    const sc = D.segments.map(() => ({ c: new Set(), v: 0 })); const allc = new Set(); let tv = 0;
+    for (const i of idx) { const o = sc[C.seg[i]]; o.c.add(C.cu[i]); o.v += C.val[i] / 100; allc.add(C.cu[i]); tv += C.val[i] / 100; }
+    const segRows = D.segments.map((nm, k) => ({ nm, c: sc[k].c.size / (allc.size || 1), v: tv ? sc[k].v / tv : 0, n: sc[k].c.size, rv: sc[k].v })).filter(r => r.n).sort((a, b) => b.v - a.v);
+    if (!segRows.length) empty(el2); else {
+      const W = el2.clientWidth || 460, H = 400, colW = 26, lx = 54, rx = W - 190, gap = 3, usable = H - gap * (segRows.length - 1);
+      let yl = 0, yr = 0, b = "";
+      b += `<text x="${lx + colW / 2}" y="-10" text-anchor="middle" class="t-ink2">Customers</text><text x="${rx + colW / 2}" y="-10" text-anchor="middle" class="t-ink2">Revenue</text>`;
+      segRows.forEach(r => {
+        const hl = r.c * usable, hr = r.v * usable, col = SEG_COL[r.nm];
+        const t = esc(tipHtml(r.nm, [["Customers", int(r.n) + " (" + pct(r.c) + ")"], ["Revenue", "R$" + int(r.rv) + " (" + pct(r.v) + ")"], ["Spend per customer", "R$" + int(r.rv / r.n)]]));
+        b += `<g data-tip="${t}">` +
+             `<path d="M${lx + colW},${yl} C${(lx + rx) / 2},${yl} ${(lx + rx) / 2},${yr} ${rx},${yr} L${rx},${yr + hr} C${(lx + rx) / 2},${yr + hr} ${(lx + rx) / 2},${yl + hl} ${lx + colW},${yl + hl} Z" fill="${col}" opacity="0.22"/>` +
+             `<rect x="${lx}" y="${yl}" width="${colW}" height="${Math.max(1, hl)}" fill="${col}"/>` +
+             `<rect x="${rx}" y="${yr}" width="${colW}" height="${Math.max(1, hr)}" fill="${col}"/>`;
+        if (hl >= 14) b += `<text x="${lx - 8}" y="${yl + hl / 2 + 4}" text-anchor="end" class="t-num t-ink2">${pct(r.c, 0)}</text>`;
+        if (hr >= 14) b += `<text x="${rx + colW + 10}" y="${yr + hr / 2 + 4}" class="t-ink" style="font-size:12.5px"><tspan style="font-weight:600">${pct(r.v, 0)}</tspan> ${esc(r.nm)}</text>`;
+        b += `</g>`;
+        yl += hl + gap; yr += hr + gap;
+      });
+      el2.innerHTML = svg(W, H, "Share of customers versus share of revenue by segment", b);
+      el2.style.marginTop = "22px";
+    }
+
+    // ----- segment list
+    const segs = D.segments.map(() => ({ c: new Set(), v: 0 })); const all = new Set(); let tv2 = 0;
+    for (const i of idx) { const s = segs[C.seg[i]]; s.c.add(C.cu[i]); s.v += C.val[i] / 100; all.add(C.cu[i]); tv2 += C.val[i] / 100; }
+    const rows = D.segments.map((nm, k) => ({ nm, n: segs[k].c.size, v: segs[k].v })).filter(r => r.n).sort((a, b) => b.v - a.v);
+    document.getElementById("segs").innerHTML = rows.map(r =>
+      `<li><span class="sw" style="background:${SEG_COL[r.nm]}"></span><span class="nm">${esc(r.nm)}</span><span class="sh">${pct(r.n / all.size, 0)} of customers · ${pct(r.v / tv2, 0)} of revenue</span><span class="act">${esc(SEG_ACT[r.nm])}</span></li>`).join("");
   }
 
   // ---------- controls ----------
   const sel = f => document.querySelector(`select[data-f="${f}"]`);
-  const opts = (labels, idxs, all = true) => (all ? '<option value="-1">All</option>' : "") + idxs.map(k => `<option value="${k}">${esc(labels[k])}</option>`).join("");
-  const range = n => Array.from({ length: n }, (_, k) => k);
-  sel("rg").innerHTML = opts(D.regions, range(D.regions.length));
-  function fillStates() {
-    const ks = range(D.states.length).filter(k => state.rg < 0 || stateRegionIdx[k] === state.rg);
-    sel("st").innerHTML = opts(D.states, ks);
-  }
+  const opts = (labels, ks, all = "All") => (all ? `<option value="-1">${all}</option>` : "") + ks.map(k => `<option value="${k}">${esc(labels[k])}</option>`).join("");
+  const rng = n => Array.from({ length: n }, (_, k) => k);
+  sel("rg").innerHTML = opts(D.regions, rng(D.regions.length), "All regions");
+  function fillStates() { sel("st").innerHTML = opts(D.states, rng(D.states.length).filter(k => state.rg < 0 || regionOf[k] === state.rg), "All states"); }
   fillStates();
-  sel("cat").innerHTML = opts(D.categories.map(prettyCat), range(D.categories.length));
-  sel("pt").innerHTML = opts(D.payTypes.map(prettyCat), range(D.payTypes.length));
-  sel("moFrom").innerHTML = opts(D.months.map(monthLabel), range(D.months.length), false);
-  sel("moTo").innerHTML = opts(D.months.map(monthLabel), range(D.months.length), false);
-  function syncControls() { ["rg", "st", "cat", "pt", "moFrom", "moTo"].forEach(f => sel(f).value = String(state[f])); }
+  sel("cat").innerHTML = opts(D.categories.map(cat), rng(D.categories.length), "All categories");
+  sel("pt").innerHTML = opts(D.payTypes.map(cat), rng(D.payTypes.length), "Any method");
+  sel("moFrom").innerHTML = opts(D.months.map(mon), rng(D.months.length), null);
+  sel("moTo").innerHTML = opts(D.months.map(mon), rng(D.months.length), null);
+  function sync() {
+    ["rg", "st", "cat", "pt", "moFrom", "moTo"].forEach(f => sel(f).value = String(state[f]));
+    document.getElementById("reset").hidden = Object.keys(F0).every(k => state[k] === F0[k]);
+  }
   document.querySelectorAll("#filters select").forEach(s => s.addEventListener("change", () => {
     const f = s.dataset.f; state[f] = +s.value;
     if (f === "rg") { state.st = -1; fillStates(); }
     if (state.moFrom > state.moTo) { if (f === "moFrom") state.moTo = state.moFrom; else state.moFrom = state.moTo; }
-    syncControls(); render();
+    sync(); render();
   }));
-  document.getElementById("reset").onclick = () => { Object.assign(state, { rg: -1, st: -1, cat: -1, pt: -1, moFrom: 0, moTo: D.months.length - 1 }); fillStates(); syncControls(); render(); };
+  document.getElementById("reset").onclick = () => { Object.assign(state, F0); fillStates(); sync(); render(); };
 
-  const PAGES = { overview: renderOverview, delivery: renderDelivery, retention: renderRetention, categories: renderCategories };
-  document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => {
-    state.page = b.dataset.page;
-    document.querySelectorAll("nav.tabs button").forEach(x => x.setAttribute("aria-selected", x === b));
-    document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + state.page));
-    history.replaceState(null, "", "#" + state.page);
-    render();
-  });
-  document.getElementById("subtitle").textContent =
-    `${fmtInt(N)} delivered orders · ${monthLabel(DATA.meta.start)} to ${monthLabel(DATA.meta.end)} · Brazil`;
+  const PAGES = ["purchase", "delivery", "review", "return"], R = { purchase: renderPurchase, delivery: renderDelivery, review: renderReview, return: renderReturn };
+  function setPage(p) {
+    state.page = p; const at = PAGES.indexOf(p);
+    document.querySelectorAll(".journey button").forEach((b, k) => { b.setAttribute("aria-selected", k === at); b.classList.toggle("done", k < at); });
+    document.getElementById("progress").style.width = (at / 3 * 75) + "%";
+    document.querySelectorAll(".page").forEach(s => s.classList.toggle("active", s.id === "page-" + p));
+    history.replaceState(null, "", "#" + p);
+  }
+  document.querySelectorAll(".journey button").forEach(b => b.onclick = () => { setPage(b.dataset.page); render(); });
+  document.getElementById("scope").textContent = `${int(N)} delivered orders, ${mon(DATA.meta.start)} to ${mon(DATA.meta.end)}`;
 
   function render() {
     const idx = filtered(), T = total(idx);
-    document.getElementById("count").textContent = fmtInt(idx.length) + " of " + fmtInt(N) + " orders";
-    PAGES[state.page](idx, T);
+    document.getElementById("count").textContent = idx.length === N ? "All orders" : `${int(idx.length)} of ${int(N)} orders`;
+    renderHero(idx, T); renderJourney(idx, T); R[state.page](idx, T);
   }
-  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 120); });
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
-  syncControls();
-  const hp = location.hash.slice(1);
-  if (PAGES[hp]) document.querySelector(`nav.tabs button[data-page="${hp}"]`).click(); else render();
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+  const h = location.hash.slice(1); setPage(PAGES.includes(h) ? h : "purchase"); sync();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(render);
 })();
 </script>
 </body>

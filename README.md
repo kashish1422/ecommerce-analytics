@@ -35,13 +35,15 @@ Full write-up: [Docs/Insights_Recommendations.md](Docs/Insights_Recommendations.
 
 ## Dashboard
 
-A single self-contained HTML file with four pages and live filters for region, state, category, payment method and date range.
+A single self-contained HTML file (fonts embedded, no external libraries) built around the order journey: **Purchase → Delivery → Review → Return visit**. The headline "star drop" and every chart recompute live for the filters (region, state, category, payment method, date range). Click a state on the map to filter the whole dashboard.
 
-| Overview | Delivery & Satisfaction |
+| Purchase | Delivery |
 |---|---|
-| ![Overview](Dashboard/screenshots/overview.png) | ![Delivery](Dashboard/screenshots/delivery.png) |
-| **Customers & Retention** | **Categories & Payments** |
-| ![Retention](Dashboard/screenshots/retention.png) | ![Categories](Dashboard/screenshots/categories.png) |
+| ![Purchase](Dashboard/screenshots/purchase.png) | ![Delivery](Dashboard/screenshots/delivery.png) |
+| **Review** | **Return visit** |
+| ![Review](Dashboard/screenshots/review.png) | ![Return visit](Dashboard/screenshots/return.png) |
+
+Chart types were chosen per question: an area trend, a ranked list, a mean-vs-median dot plot, a tile map of Brazil, a diverging histogram around the promised date, 100% stacked star ratings, a waffle chart of bad reviews, a cohort heatmap, and a customer-to-revenue flow by segment.
 
 ---
 
@@ -65,6 +67,7 @@ olist-ecommerce-analytics/
 │   ├── index.html                # interactive dashboard (open in a browser)
 │   ├── dashboard_template.html
 │   ├── build_dashboard.py        # rebuilds index.html from Data/Processed
+│   ├── fonts/                    # Bitter + Fira Sans subsets (SIL Open Font License)
 │   └── screenshots/
 ├── Docs/
 │   ├── Business_Understanding.md
